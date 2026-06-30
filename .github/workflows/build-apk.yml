@@ -38,7 +38,7 @@ jobs:
           DART_VM_OPTIONS: '--old_gen_heap_size=200 --new_gen_semi_max_size=32'
 
       - name: Upload APK as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: apk-release
           path: build/app/outputs/flutter-apk/
