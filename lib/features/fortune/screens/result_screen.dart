@@ -7,7 +7,7 @@ import 'package:myfortune/core/constants/tarot_data.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
 import 'package:myfortune/data/models/action_log.dart';
 import 'package:myfortune/data/models/consultation.dart';
-import 'package:myfortune/data/providers/subscription_provider.dart';
+// import 'package:myfortune/data/providers/subscription_provider.dart';
 import 'package:myfortune/data/repositories/action_item_repository.dart';
 import 'package:myfortune/data/services/ad_service.dart';
 import 'package:myfortune/data/services/database_service.dart';
@@ -81,10 +81,12 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
 
   /// CloseボタンのonPressedハンドラ
   void _onClosePressed() {
-    final subscriptionAsync = ref.watch(subscriptionProvider);
-    subscriptionAsync.whenData((subscription) {
-      unawaited(_closeScreenWithAd(subscription.isFreeUser));
-    });
+    // TODO: Restore subscription provider
+    // final subscriptionAsync = ref.watch(subscriptionProvider);
+    // subscriptionAsync.whenData((subscription) {
+    //   unawaited(_closeScreenWithAd(subscription.isFreeUser));
+    // });
+    unawaited(_closeScreenWithAd(false)); // Default to no ads for now
   }
 
   Color get _scoreColor {
@@ -141,14 +143,18 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     final consultation = widget.consultation;
     final committedCount = _committed.where((c) => c).length;
 
+    // TODO: Restore subscription provider
     // 購読情報を取得
-    final subscriptionAsync = ref.watch(subscriptionProvider);
+    // final subscriptionAsync = ref.watch(subscriptionProvider);
 
     // 初回マウント時に広告を初期化
-    subscriptionAsync.whenData((subscription) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _initializeAds(subscription.isFreeUser);
-      });
+    // subscriptionAsync.whenData((subscription) {
+    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+    //     _initializeAds(subscription.isFreeUser);
+    //   });
+    // });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeAds(false); // Default to no ads for now
     });
 
     return Scaffold(
