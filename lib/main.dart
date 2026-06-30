@@ -12,7 +12,7 @@ import 'package:myfortune/data/services/purchase_service.dart';
 import 'package:myfortune/features/home/screens/home_screen.dart';
 import 'package:myfortune/features/onboarding/screens/onboarding_screen.dart';
 import 'package:myfortune/features/splash/screens/splash_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 
 /// 通知タップ時のルーティング用グローバルキー
@@ -104,9 +104,11 @@ class _StartupRouter extends StatelessWidget {
 
   Future<Widget> _resolve() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final done = prefs.getBool('onboarding_complete') ?? false;
-      if (!done) return const OnboardingScreen();
+      // TODO: shared_preferences disabled
+      // final prefs = await SharedPreferences.getInstance();
+      // final done = prefs.getBool('onboarding_complete') ?? false;
+      // if (!done) return const OnboardingScreen();
+      final done = false; // Always go to OnboardingScreen for now
 
       final repo = UserRepository();
       if (!repo.isSignedIn) return const OnboardingScreen();

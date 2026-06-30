@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
+// import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:myfortune/core/constants/fortune_config.dart';
 import 'package:myfortune/data/models/user_profile.dart';
 import 'package:myfortune/data/repositories/user_repository.dart';
@@ -19,6 +19,8 @@ class ProductIds {
   }
 }
 
+// TODO: in_app_purchase disabled
+/*
 class PurchaseService {
   static final _iap = InAppPurchase.instance;
   static StreamSubscription<List<PurchaseDetails>>? _subscription;
@@ -130,4 +132,19 @@ class PurchaseService {
       }
     }
   }
+}
+*/
+
+// Mock PurchaseService stub
+class PurchaseService {
+  static Future<bool> isAvailable() async => false;
+  static void initialize({
+    required String uid,
+    required void Function(UserPlan plan) onPlanUpdated,
+  }) {}
+  static void dispose() {}
+  static Future<List<dynamic>> loadProducts() async => [];
+  static Future<void> purchase(dynamic product) async {}
+  static Future<void> restorePurchases() async {}
+  static Future<UserPlan> getActivePlan(String uid) async => UserPlan.free;
 }

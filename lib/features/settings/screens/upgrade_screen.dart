@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
+// import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:myfortune/core/constants/fortune_config.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
 import 'package:myfortune/data/models/user_profile.dart';
@@ -20,7 +20,9 @@ class UpgradeScreen extends StatefulWidget {
 }
 
 class _UpgradeScreenState extends State<UpgradeScreen> {
-  List<ProductDetails> _products = [];
+  // TODO: in_app_purchase disabled
+  // List<ProductDetails> _products = [];
+  List<dynamic> _products = [];
   bool _isLoading = true;
   String? _purchasingId;
   bool _isAvailable = false;
@@ -53,6 +55,8 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
     }
   }
 
+  // TODO: in_app_purchase disabled
+  /*
   Future<void> _purchase(ProductDetails product) async {
     setState(() => _purchasingId = product.id);
     try {
@@ -67,6 +71,11 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
     } finally {
       if (mounted) setState(() => _purchasingId = null);
     }
+  }
+  */
+
+  Future<void> _purchase(dynamic product) async {
+    debugPrint('Purchase disabled (in_app_purchase disabled)');
   }
 
   Future<void> _restore() async {
@@ -299,7 +308,9 @@ class _Cell extends StatelessWidget {
 }
 
 class _PurchaseCard extends StatelessWidget {
-  final ProductDetails product;
+  // TODO: in_app_purchase disabled
+  // final ProductDetails product;
+  final dynamic product;
   final UserPlan plan;
   final bool isCurrentPlan;
   final bool isDisabled;
@@ -385,6 +396,8 @@ class _PurchaseCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
+            // TODO: in_app_purchase disabled
+            /*
             Row(
               baseline: TextBaseline.alphabetic,
               crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -401,6 +414,29 @@ class _PurchaseCard extends StatelessWidget {
                 Text(
                   '/ 月',
                   style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            */
+            const Row(
+              baseline: TextBaseline.alphabetic,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              children: [
+                Text(
+                  'N/A',
+                  style: TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(width: 4),
+                Text(
+                  '/ 月',
+                  style: TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 12,
                   ),
