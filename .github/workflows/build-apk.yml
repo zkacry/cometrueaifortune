@@ -27,6 +27,13 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Create key.properties
+        run: |
+          echo "storePassword=myfortune2024" > android/key.properties
+          echo "keyPassword=myfortune2024" >> android/key.properties
+          echo "keyAlias=myfortune" >> android/key.properties
+          echo "storeFile=myfortune-release.jks" >> android/key.properties
+
       - name: Build APK (Release)
         run: |
           flutter build apk \
