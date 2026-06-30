@@ -30,8 +30,11 @@ jobs:
       - name: Repair pub cache
         run: dart pub cache repair
 
+      - name: Check pubspec.yaml
+        run: cat pubspec.yaml | head -50
+
       - name: Get dependencies
-        run: flutter pub get --no-offline
+        run: flutter pub get
 
       - name: Create key.properties
         run: |
