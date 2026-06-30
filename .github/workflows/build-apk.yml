@@ -27,8 +27,11 @@ jobs:
       - name: Clean Flutter cache
         run: flutter clean
 
+      - name: Repair pub cache
+        run: dart pub cache repair
+
       - name: Get dependencies
-        run: flutter pub get
+        run: flutter pub get --no-offline
 
       - name: Create key.properties
         run: |
