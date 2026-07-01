@@ -56,11 +56,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBlmBnBnTfWRvkf2pLb70oiImskDzoiT-Q',
-    appId: '1:337578395985:android:78a4a0f370e9a7ffd0ab70',
-    messagingSenderId: '337578395985',
-    projectId: 'petit-works-utility',
-    storageBucket: 'petit-works-utility.firebasestorage.app',
+    apiKey: 'AIzaSyCkIt1e0hN8K3dl7HN2CoH_h95ztkNrgmg',
+    appId: '1:216377882454:android:e6a1855dc2e27f50d108f7',
+    messagingSenderId: '216377882454',
+    projectId: 'petit-works-apps-9029a',
+    storageBucket: 'petit-works-apps-9029a.firebasestorage.app',
   );
 
   static const FirebaseOptions web = FirebaseOptions(

@@ -1,26 +1,43 @@
 {
   "project_info": {
-    "project_number": "337578395985",
-    "project_id": "petit-works-utility",
-    "storage_bucket": "petit-works-utility.firebasestorage.app"
+    "project_number": "216377882454",
+    "project_id": "petit-works-apps-9029a",
+    "storage_bucket": "petit-works-apps-9029a.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:337578395985:android:78a4a0f370e9a7ffd0ab70",
+        "mobilesdk_app_id": "1:216377882454:android:e6a1855dc2e27f50d108f7",
         "android_client_info": {
           "package_name": "com.petitworksapps.cometrueaifortune"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "216377882454-ltvkcchk8v0b1u633pte483jkg1lmor8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBlmBnBnTfWRvkf2pLb70oiImskDzoiT-Q"
+          "current_key": "AIzaSyCkIt1e0hN8K3dl7HN2CoH_h95ztkNrgmg"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216377882454-ltvkcchk8v0b1u633pte483jkg1lmor8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "216377882454-onugpgve2vrb3oo2d8n90rbi37j6av2a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.petitworksapps.cometrueaifortune"
+              }
+            }
+          ]
         }
       }
     }
