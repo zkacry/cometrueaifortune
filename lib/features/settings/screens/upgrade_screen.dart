@@ -413,7 +413,6 @@ class _PurchaseCard extends StatelessWidget {
             ),
             */
             const Row(
-              baseline: TextBaseline.alphabetic,
               crossAxisAlignment: CrossAxisAlignment.baseline,
               children: [
                 Text(

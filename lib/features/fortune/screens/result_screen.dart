@@ -348,32 +348,34 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             ),
           ),
           // バナー広告（無料ユーザーの場合のみ表示）
-          subscriptionAsync.when(
-            data: (subscription) {
-              if (!subscription.isFreeUser) {
-                return const SizedBox.shrink();
-              }
-
-              return Container(
-                color: Colors.black87,
-                padding: const EdgeInsets.all(4),
-                child: SizedBox(
-                  height: 50,
-                  child: Center(
-                    child: _adService.bannerAd != null
-                        ? SizedBox(
-                            width: _adService.bannerAd!.size.width.toDouble(),
-                            height: _adService.bannerAd!.size.height.toDouble(),
-                            child: AdWidget(ad: _adService.bannerAd!),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ),
-              );
-            },
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-          ),
+          // subscriptionAsync.when(
+          //   data: (subscription) {
+          //     if (!subscription.isFreeUser) {
+          //       return const SizedBox.shrink();
+          //     }
+          //
+          //     return Container(
+          //       color: Colors.black87,
+          //       padding: const EdgeInsets.all(4),
+          //       child: SizedBox(
+          //         height: 50,
+          //         child: Center(
+          //           child: _adService.bannerAd != null
+          //               ? SizedBox(
+          //                   width: _adService.bannerAd!.size.width.toDouble(),
+          //                   height: _adService.bannerAd!.size.height.toDouble(),
+          //                   child: AdWidget(ad: _adService.bannerAd!),
+          //                 )
+          //               : const SizedBox.shrink(),
+          //         ),
+          //       ),
+          //     );
+          //   },
+          //   loading: () => const SizedBox.shrink(),
+          //   error: (_, __) => const SizedBox.shrink(),
+          // ),
+          // デフォルト表示（プレミアムではない状態）
+          const SizedBox.shrink(),
         ],
       ),
     );

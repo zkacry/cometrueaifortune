@@ -79,16 +79,16 @@ class PurchaseService {
   static Future<UserPlan> getActivePlan(String uid) async {
     try {
       final profile = await UserRepository().getProfile(uid);
-      if (profile.plan == UserPlan.free) {
+      if (profile?.plan == UserPlan.free) {
         return UserPlan.free;
       }
       // 購読期限をチェック
-      if (profile.subscriptionExpiresAt != null &&
-          profile.subscriptionExpiresAt!.isBefore(DateTime.now())) {
+      if (profile?.subscriptionExpiresAt != null &&
+          profile?.subscriptionExpiresAt!.isBefore(DateTime.now())) {
         await UserRepository().updatePlan(uid, UserPlan.free);
         return UserPlan.free;
       }
-      return profile.plan;
+      return profile?.plan ?? UserPlan.free;
     } catch (e) {
       debugPrint('Get active plan error: $e');
       return UserPlan.free;
