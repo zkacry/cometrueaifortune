@@ -1,4 +1,4 @@
-// import 'package:dio/dio.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:myfortune/core/constants/fortune_config.dart';
@@ -59,8 +59,7 @@ class CompatibilityResult {
 }
 
 class ClaudeService {
-  // TODO: dio disabled
-  // static final _dio = Dio();
+  static final _dio = Dio();
   static const _fallbackUrl = 'https://api.anthropic.com/v1/messages';
   static const _fallbackModel = 'claude-haiku-4-5-20251001';
 
@@ -480,8 +479,6 @@ $input
   }
 
   // ── 内部：OpenAI互換API共通呼び出し（DeepSeek・Gemini） ──
-  // TODO: dio disabled
-  /*
   Future<String> _callOpenAiCompatible({
     required String baseUrl,
     required String apiKey,
@@ -521,23 +518,8 @@ $input
       throw Exception('$providerName error($status): $body');
     }
   }
-  */
-
-  Future<String> _callOpenAiCompatible({
-    required String baseUrl,
-    required String apiKey,
-    required String model,
-    required String systemPrompt,
-    required String userPrompt,
-    required int maxTokens,
-    required String providerName,
-  }) async {
-    throw Exception('$providerName is disabled (dio disabled)');
-  }
 
   // ── 内部：Claude APIコール（フォールバック用） ───
-  // TODO: dio disabled
-  /*
   Future<String> _callClaude({
     required String systemPrompt,
     required String userPrompt,
@@ -598,15 +580,6 @@ $input
       }
       throw Exception('通信エラー(${e.type.name}): ${e.message}');
     }
-  }
-  */
-
-  Future<String> _callClaude({
-    required String systemPrompt,
-    required String userPrompt,
-    int maxTokens = 1000,
-  }) async {
-    throw Exception('Claude API is disabled (dio disabled)');
   }
 
   // ── 相性システムプロンプト ────────────────────────

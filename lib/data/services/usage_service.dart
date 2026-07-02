@@ -1,8 +1,6 @@
-// import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// 月次利用回数をローカルで管理（Firestoreと二重管理）
-// TODO: shared_preferences disabled
-/*
 class UsageService {
   static const _countKey = 'monthly_reading_count';
   static const _monthKey = 'reading_month_key';
@@ -38,11 +36,4 @@ class UsageService {
     await prefs.setInt(_countKey, 0);
     await prefs.setString(_monthKey, _currentMonthKey());
   }
-}
-*/
-
-class UsageService {
-  static Future<int> getCount() async => 0;
-  static Future<void> increment() async {}
-  static Future<void> reset() async {}
 }

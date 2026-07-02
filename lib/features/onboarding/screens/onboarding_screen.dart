@@ -5,7 +5,7 @@ import 'package:myfortune/data/models/user_profile.dart';
 import 'package:myfortune/data/repositories/user_repository.dart';
 import 'package:myfortune/data/services/notification_service.dart';
 import 'package:myfortune/features/home/screens/home_screen.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// 最小限オンボーディング：名前 + 生年月日だけで30秒以内に完了
 class OnboardingScreen extends StatefulWidget {
@@ -71,9 +71,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
       await repo.saveProfile(profile);
 
-      // TODO: shared_preferences disabled
-      // final prefs = await SharedPreferences.getInstance();
-      // await prefs.setBool('onboarding_complete', true);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('onboarding_complete', true);
 
       // 通知権限をリクエストして初回スケジュールを設定
       await NotificationService.requestPermissions();
