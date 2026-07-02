@@ -83,8 +83,7 @@ class PurchaseService {
         return UserPlan.free;
       }
       // 購読期限をチェック
-      if (profile?.subscriptionExpiresAt != null &&
-          profile?.subscriptionExpiresAt!.isBefore(DateTime.now())) {
+      if (profile?.subscriptionExpiresAt?.isBefore(DateTime.now()) ?? false) {
         await UserRepository().updatePlan(uid, UserPlan.free);
         return UserPlan.free;
       }
