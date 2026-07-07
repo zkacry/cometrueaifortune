@@ -77,10 +77,6 @@ class _TarotScreenState extends State<TarotScreen> {
         fortuneSummary: summary,
       );
 
-      // 利用回数を増やす（SharedPreferences + Firestore 両方）
-      await UsageService.increment();
-      await UserRepository().incrementReadingCount(widget.profile.uid);
-
       // SQLiteに保存
       final consultation = Consultation(
         uid: widget.profile.uid,
@@ -94,6 +90,10 @@ class _TarotScreenState extends State<TarotScreen> {
         suggestedActions: result.suggestedActions,
       );
       final id = await ConsultationRepository().save(consultation);
+
+      // DB保存成功後に初めて利用回数を増やす（SharedPreferences + Firestore 両方）
+      await UsageService.increment();
+      await UserRepository().incrementReadingCount(widget.profile.uid);
 
       if (mounted) {
         final nav = Navigator.of(context);

@@ -81,9 +81,6 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
         fortuneSummary: summary,
       );
 
-      await UsageService.increment();
-      await UserRepository().incrementReadingCount(widget.profile.uid);
-
       final consultation = Consultation(
         uid: widget.profile.uid,
         createdAt: DateTime.now(),
@@ -94,6 +91,10 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
         suggestedActions: result.suggestedActions,
       );
       final id = await ConsultationRepository().save(consultation);
+
+      // DB保存成功後に初めて利用回数を増やす
+      await UsageService.increment();
+      await UserRepository().incrementReadingCount(widget.profile.uid);
 
       if (mounted) {
         final nav = Navigator.of(context);

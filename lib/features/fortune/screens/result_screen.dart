@@ -9,6 +9,7 @@ import 'package:myfortune/data/models/action_log.dart';
 import 'package:myfortune/data/models/consultation.dart';
 // import 'package:myfortune/data/providers/subscription_provider.dart';
 import 'package:myfortune/data/repositories/action_item_repository.dart';
+import 'package:myfortune/data/repositories/consultation_repository.dart';
 import 'package:myfortune/data/services/ad_service.dart';
 import 'package:myfortune/data/services/database_service.dart';
 
@@ -34,6 +35,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   // 保存済みアクションID（重複保存防止）
   final Set<int> _savedActionIndices = {};
 
+  // 的中判定状態（null=未判定, true=当たった, false=外れた）
+  late bool? _wasTrue;
+
   // 広告関連
   final AdService _adService = AdService();
   late InterstitialAd? _interstitialAd;
@@ -42,6 +46,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   void initState() {
     super.initState();
     _committed = List.filled(widget.consultation.suggestedActions.length, false);
+    _wasTrue = widget.consultation.wasTrueJudgement;
   }
 
   /// 広告の初期化（無料ユーザーの場合のみ広告をロード）
@@ -67,6 +72,20 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       _adService.disposeInterstitialAd();
     }
     super.dispose();
+  }
+
+  /// 的中判定を保存
+  Future<void> _updateWasTrue(bool? value) async {
+    if (widget.consultation.id == null) return;
+    try {
+      setState(() => _wasTrue = value);
+      await ConsultationRepository().updateWasTrueJudgement(
+        widget.consultation.id!,
+        value,
+      );
+    } catch (e) {
+      debugPrint('update wasTrue error: $e');
+    }
   }
 
   /// 画面を閉じる（無料ユーザーの場合は広告を表示）
@@ -210,6 +229,63 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   style: TextStyle(color: _scoreColor, fontSize: 14),
                 ),
               ]),
+            ),
+            const SizedBox(height: 16),
+
+            // 「当たった？」ボタン
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.card,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: AppTheme.accent.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '✨ この占い、当たりましたか？',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _HitButton(
+                          label: '当たった',
+                          emoji: '🎯',
+                          isSelected: _wasTrue == true,
+                          onTap: () => _updateWasTrue(true),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _HitButton(
+                          label: 'わからない',
+                          emoji: '❓',
+                          isSelected: _wasTrue == null,
+                          onTap: () => _updateWasTrue(null),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _HitButton(
+                          label: '外れた',
+                          emoji: '✗',
+                          isSelected: _wasTrue == false,
+                          onTap: () => _updateWasTrue(false),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
 
@@ -431,6 +507,60 @@ class _ActionItem extends StatelessWidget {
             ),
           ),
         ]),
+      ),
+    );
+  }
+}
+
+class _HitButton extends StatelessWidget {
+  final String label;
+  final String emoji;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _HitButton({
+    required this.label,
+    required this.emoji,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppTheme.accent.withValues(alpha: 0.12)
+              : AppTheme.background,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected
+                ? AppTheme.accent
+                : AppTheme.divider,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 20)),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected
+                    ? AppTheme.accent
+                    : AppTheme.textSecondary,
+                fontSize: 12,
+                fontWeight: isSelected
+                    ? FontWeight.w600
+                    : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -109,12 +109,6 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
       );
       debugPrint('[Reading] AI占い完了: score=${result.score}');
 
-      await UsageService.increment();
-      debugPrint('[Reading] 使用回数をインクリメント');
-
-      await UserRepository().incrementReadingCount(widget.profile.uid);
-      debugPrint('[Reading] 月次カウントをインクリメント');
-
       final consultation = Consultation(
         uid: widget.profile.uid,
         createdAt: DateTime.now(),
@@ -143,6 +137,13 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
         }
         return;
       }
+
+      // DB保存成功後に初めて回数を消費
+      await UsageService.increment();
+      debugPrint('[Reading] 使用回数をインクリメント');
+
+      await UserRepository().incrementReadingCount(widget.profile.uid);
+      debugPrint('[Reading] 月次カウントをインクリメント');
 
       if (mounted) {
         final nav = Navigator.of(context);
