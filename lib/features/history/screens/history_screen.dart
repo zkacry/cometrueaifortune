@@ -7,6 +7,7 @@ import 'package:myfortune/data/repositories/action_item_repository.dart';
 import 'package:myfortune/data/repositories/consultation_repository.dart';
 import 'package:myfortune/data/services/database_service.dart';
 import 'package:myfortune/features/actions/screens/action_list_screen.dart';
+import 'package:myfortune/features/history/screens/hit_rate_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   final String uid;
@@ -26,7 +27,7 @@ class _HistoryScreenState extends State<HistoryScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() => setState(() {})); // バッジ再描画
     _load();
   }
@@ -105,6 +106,7 @@ class _HistoryScreenState extends State<HistoryScreen>
                   ],
                 ),
               ),
+              const Tab(text: '📊 的中率'),
             ],
           ),
         ),
@@ -233,6 +235,9 @@ class _HistoryScreenState extends State<HistoryScreen>
 
               // ── アクションタブ ──
               ActionListScreen(uid: widget.uid),
+
+              // ── 的中率ダッシュボードタブ ──
+              HitRateScreen(uid: widget.uid),
             ],
           ),
         ),

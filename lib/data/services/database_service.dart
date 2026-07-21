@@ -15,7 +15,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: (db, version) async {
         await _createTables(db);
       },
@@ -51,6 +51,13 @@ class DatabaseService {
             )
           ''');
         }
+        if (oldVersion < 4) {
+          // v4: consultations テーブルに wasTrueJudgement 列追加（的中判定）
+          await db.execute('''
+            ALTER TABLE consultations
+            ADD COLUMN wasTrueJudgement INTEGER DEFAULT NULL
+          ''');
+        }
       },
     );
   }
@@ -70,6 +77,7 @@ class DatabaseService {
         score INTEGER,
         suggestedActions TEXT DEFAULT '',
         decision TEXT,
+        wasTrueJudgement INTEGER DEFAULT NULL,
         synced INTEGER DEFAULT 0
       )
     ''');

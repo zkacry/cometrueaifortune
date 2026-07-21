@@ -12,6 +12,7 @@ class Consultation {
   final int? score; // 吉凶スコア 0-100
   final List<String> suggestedActions;
   final String? decision; // ユーザーが記録した決断
+  final bool? wasTrueJudgement; // null=未判定, true=当たった, false=外れた
   final bool synced; // Firestoreと同期済み
 
   Consultation({
@@ -26,6 +27,7 @@ class Consultation {
     this.score,
     this.suggestedActions = const [],
     this.decision,
+    this.wasTrueJudgement,
     this.synced = false,
   });
 
@@ -40,6 +42,7 @@ class Consultation {
         'score': score,
         'suggestedActions': suggestedActions.join('|'),
         'decision': decision,
+        'wasTrueJudgement': wasTrueJudgement == null ? null : (wasTrueJudgement! ? 1 : 0),
         'synced': synced ? 1 : 0,
       };
 
@@ -47,6 +50,7 @@ class Consultation {
     final cardsStr = map['cards'] as String? ?? '';
     final reversedStr = map['cardReversed'] as String? ?? '';
     final actionsStr = map['suggestedActions'] as String? ?? '';
+    final wasTrueJudgement = map['wasTrueJudgement'] as int?;
     return Consultation(
       id: map['id'] as int?,
       uid: map['uid'] as String,
@@ -65,11 +69,15 @@ class Consultation {
       score: map['score'] as int?,
       suggestedActions: actionsStr.isEmpty ? [] : actionsStr.split('|'),
       decision: map['decision'] as String?,
+      wasTrueJudgement: wasTrueJudgement == null ? null : wasTrueJudgement == 1,
       synced: (map['synced'] as int? ?? 0) == 1,
     );
   }
 
-  Consultation copyWith({String? decision}) => Consultation(
+  Consultation copyWith({
+    String? decision,
+    bool? wasTrueJudgement,
+  }) => Consultation(
         id: id,
         uid: uid,
         createdAt: createdAt,
@@ -81,6 +89,7 @@ class Consultation {
         score: score,
         suggestedActions: suggestedActions,
         decision: decision ?? this.decision,
+        wasTrueJudgement: wasTrueJudgement ?? this.wasTrueJudgement,
         synced: synced,
       );
 }
