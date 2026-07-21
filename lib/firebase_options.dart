@@ -47,14 +47,15 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDTY-lJ_3XtXj8CffEMB-Te7j2DqeHTNDQ',
-    appId: '1:1048647948872:ios:1ade8b1e6633e368b2567d',
-    messagingSenderId: '1048647948872',
-    projectId: 'device-streaming-8800428e',
-    storageBucket: 'device-streaming-8800428e.firebasestorage.app',
-    iosBundleId: 'com.tsukiapp.tsukiApp',
+    apiKey: 'AIzaSyDo80X9b2h8NpB1jxAwO75ELOYJyDMt1Yw',
+    appId: '1:216377882454:ios:897b7a41ffc89c5ad108f7',
+    messagingSenderId: '216377882454',
+    projectId: 'petit-works-apps-9029a',
+    storageBucket: 'petit-works-apps-9029a.firebasestorage.app',
+    androidClientId: '216377882454-2n890sghfm1va9k0bnj78ronfbd522bt.apps.googleusercontent.com',
+    iosClientId: '216377882454-m5mk6vn2hc895v58d1v0rpl98isqf9i5.apps.googleusercontent.com',
+    iosBundleId: 'com.petitworksapps.cometrueaifortune',
   );
-
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCkIt1e0hN8K3dl7HN2CoH_h95ztkNrgmg',
     appId: '1:216377882454:android:e6a1855dc2e27f50d108f7',
