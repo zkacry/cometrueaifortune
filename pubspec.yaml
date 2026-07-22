@@ -2,7 +2,7 @@ name: myfortune
 description: "AI記録占い - あなたの記憶を読んで占うAIアプリ"
 publish_to: 'none'
 
-version: 1.0.3+2104
+version: 1.0.4+2108
 
 environment:
   sdk: ^3.8.0
@@ -67,6 +67,7 @@ flutter_launcher_icons:
 
 flutter:
   uses-material-design: true
+  generate: true
 
   assets:
     - .env
