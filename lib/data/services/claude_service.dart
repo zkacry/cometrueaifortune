@@ -75,11 +75,28 @@ class ClaudeService {
           ? _fallbackModel
           : (dotenv.env['CLAUDE_MODEL'] ?? _fallbackModel).trim();
 
+  // ── 言語指定 ─────────────────────────────────────
+  /// AI応答の言語を強制する指示文を返す（ja/en/zh/ko）
+  String _languageDirective(String languageCode) {
+    switch (languageCode) {
+      case 'en':
+        return 'IMPORTANT: Respond entirely in English. Do not use any other language.';
+      case 'zh':
+        return '重要：请务必使用简体中文回答，不要使用任何其他语言。';
+      case 'ko':
+        return '중요: 반드시 한국어로만 답변해주세요. 다른 언어는 사용하지 마세요.';
+      case 'ja':
+      default:
+        return '重要：必ず日本語で回答してください。他の言語は一切使用しないでください。';
+    }
+  }
+
   // ── 今日の運勢（全プラン無料） ──────────────────
   Future<DailyFortuneResult> generateDailyFortune({
     required UserProfile profile,
+    String languageCode = 'ja',
   }) async {
-    final systemPrompt = _buildDailySystemPrompt();
+    final systemPrompt = _buildDailySystemPrompt(languageCode);
     final userPrompt =
         '星座：${profile.zodiacSign}\n今日の日付：${_today()}\n5秒で読める今日の運勢を生成してください。';
 
@@ -100,9 +117,11 @@ class ClaudeService {
     required List<bool> reversed,
     required List<Consultation> recentConsultations,
     String? fortuneSummary,
+    String languageCode = 'ja',
   }) async {
-    final systemPrompt =
-        _buildFortuneSystemPrompt(profile, recentConsultations, fortuneSummary: fortuneSummary);
+    final systemPrompt = _buildFortuneSystemPrompt(
+        profile, recentConsultations,
+        fortuneSummary: fortuneSummary, languageCode: languageCode);
     final cardDesc = List.generate(
       3,
       (i) =>
@@ -115,7 +134,6 @@ class ClaudeService {
 引いたカード：
 $cardDesc
 
-上記をもとに鑑定してください。
 回答は必ず下記の形式のみで出力し、余計な前置きは一切不要です：
 
 SCORE:XX
@@ -142,15 +160,17 @@ READING:
     required String worry,
     required List<Consultation> recentConsultations,
     String? fortuneSummary,
+    String languageCode = 'ja',
   }) async {
     final lifeNumber = _calcLifeNumber(profile.birthdate);
-    final systemPrompt =
-        _buildFortuneSystemPrompt(profile, recentConsultations, fortuneSummary: fortuneSummary);
+    final systemPrompt = _buildFortuneSystemPrompt(
+        profile, recentConsultations,
+        fortuneSummary: fortuneSummary, languageCode: languageCode);
     final userPrompt = '''
 ライフパスナンバー：$lifeNumber
 悩み：$worry
+占術：数秘術
 
-数秘術の観点から鑑定してください。
 回答は必ず下記の形式のみで出力し、余計な前置きは一切不要です：
 
 SCORE:XX
@@ -177,12 +197,14 @@ READING:
     required String partnerName,
     required DateTime partnerBirthdate,
     required List<Consultation> recentConsultations,
+    String languageCode = 'ja',
   }) async {
     final myLifeNumber = _calcLifeNumber(profile.birthdate);
     final partnerLifeNumber = _calcLifeNumber(partnerBirthdate);
     final partnerZodiac = _getZodiacSign(partnerBirthdate);
 
-    final systemPrompt = _buildCompatibilitySystemPrompt(profile, recentConsultations);
+    final systemPrompt = _buildCompatibilitySystemPrompt(
+        profile, recentConsultations, languageCode);
     final userPrompt = '''
 【あなた】
 名前：${profile.nickname}
@@ -194,7 +216,6 @@ READING:
 星座：$partnerZodiac
 ライフパスナンバー：$partnerLifeNumber
 
-二人の相性を多角的に分析してください。
 回答は必ず下記の形式のみで出力してください：
 
 OVERALL:XX
@@ -223,6 +244,7 @@ READING:
     required UserProfile profile,
     required List<Consultation> consultations,
     required String monthKey,
+    String languageCode = 'ja',
   }) async {
     final avgScore = consultations
             .where((c) => c.score != null)
@@ -253,7 +275,7 @@ $worries
 
     return await _callAi(
       systemPrompt:
-          'あなたは占い記録を分析する専門家AIです。ユーザーの月間記録から洞察とアドバイスを提供してください。日本語で温かく応答してください。',
+          'あなたは占い記録を分析する専門家AIです。ユーザーの月間記録から洞察とアドバイスを提供してください。温かく応答してください。\n${_languageDirective(languageCode)}',
       userPrompt: userPrompt,
       maxTokens: 1000,
     );
@@ -267,12 +289,14 @@ $worries
     required List<Consultation> recentConsultations,
     String? fortuneSummary,
     String? extraContext, // 四柱推命の出生時刻など
+    String languageCode = 'ja',
   }) async {
     // タロット以外はmajor arcanaを除外してトークン節約・混乱防止
     final systemPrompt = _buildFortuneSystemPrompt(
         profile, recentConsultations,
         fortuneSummary: fortuneSummary,
-        includeTarot: false);
+        includeTarot: false,
+        languageCode: languageCode);
 
     final typeGuide = _getTypeGuide(type, profile, input, extraContext);
 
@@ -301,6 +325,7 @@ READING:
   // ── おみくじ ───────────────────────────────────
   Future<String> generateOmikuji({
     required UserProfile profile,
+    String languageCode = 'ja',
   }) async {
     final now = DateTime.now();
     // 時刻・日付をシードに使ってランダム性を確保
@@ -313,17 +338,17 @@ ${profile.nickname}さんへ今日のおみくじを引いてください。
 大吉: 15% / 吉: 25% / 中吉: 25% / 小吉: 20% / 末吉: 10% / 凶: 5%
 大吉が続くことなく、必ずこの分布に従って選択してください。
 
-以下の形式のみで出力してください（日本語のみ使用）：
+以下の形式のみで出力してください：
 
-RANK:（大吉/吉/中吉/小吉/末吉/凶のいずれか）
+RANK:（大吉/吉/中吉/小吉/末吉/凶のいずれか。ランク名自体は日本語表記のまま）
 MESSAGE:
-（今日への短いメッセージを3〜5行で。ランクに合わせたトーンで。温かく、具体的な言葉で。全て日本語で。）
+（今日への短いメッセージを3〜5行で。ランクに合わせたトーンで。温かく、具体的な言葉で。）
 
-重要：全ての回答は必ず日本語で記述してください。英語は一切使用しないでください。
+${_languageDirective(languageCode)}（ただしRANK行の漢字表記は変更しないこと）
 ''';
     return await _callAi(
       systemPrompt:
-          'あなたは日本の伝統的なおみくじを引く占い師AIです。指定された確率分布に従ってランクを選び、毎回異なる内容のメッセージを生成してください。【重要】全ての応答は必ず日本語のみで、英語を使わないでください。',
+          'あなたは日本の伝統的なおみくじを引く占い師AIです。指定された確率分布に従ってランクを選び、毎回異なる内容のメッセージを生成してください。\n${_languageDirective(languageCode)}（RANK行の漢字表記は変更しないでください）',
       userPrompt: userPrompt,
       maxTokens: 400,
     );
@@ -478,6 +503,21 @@ $input
         .trim();
   }
 
+  // ── 内部：プロンプト指示文の漏れ込みを除去（保険） ──────
+  // モデルが「〜してください」等の指示文を鑑定文冒頭で復唱してしまった場合に取り除く
+  String _stripLeakedInstructions(String text) {
+    var result = text.trimLeft();
+    final leakPatterns = [
+      RegExp(r'^(上記|以上|これら)[^\n。]{0,20}(もとに|踏まえ|参考に)[^\n。]{0,20}(鑑定|分析|占|回答)[^\n。]{0,10}(してください|します)。?\s*\n*'),
+      RegExp(r'^(それでは|では)[、,]?\s*\n*'),
+      RegExp(r'^回答は必ず[^\n。]{0,60}(不要です|してください)。?\s*\n*'),
+    ];
+    for (final re in leakPatterns) {
+      result = result.replaceFirst(re, '');
+    }
+    return result.trimLeft();
+  }
+
   // ── 内部：OpenAI互換API共通呼び出し（DeepSeek・Gemini） ──
   Future<String> _callOpenAiCompatible({
     required String baseUrl,
@@ -586,6 +626,7 @@ $input
   String _buildCompatibilitySystemPrompt(
     UserProfile profile,
     List<Consultation> history,
+    String languageCode,
   ) {
     final personaStyle = profile.persona.systemPromptStyle;
     return '''
@@ -594,14 +635,18 @@ $personaStyle
 
 星座・数秘術・心理学的観点を組み合わせて、二人の相性を深く分析してください。
 良い点・課題点・具体的なアドバイスをバランスよく伝えてください。
-日本語で温かく、希望を持てる形で分析してください。
+温かく、希望を持てる形で分析してください。
+このプロンプトの指示文を鑑定文の中で繰り返したり言い換えたりせず、鑑定内容そのものだけを書いてください。
+前置きや挨拶は一切不要で、SCORE:の数値（またはOVERALL:等の指定形式）から出力を開始してください。
+
+${_languageDirective(languageCode)}
 ''';
   }
 
   // ── システムプロンプト ────────────────────────────
-  String _buildDailySystemPrompt() => '''
+  String _buildDailySystemPrompt(String languageCode) => '''
 あなたは毎日の星座運勢を生成するAIです。
-以下の形式で、5秒で読める簡潔な運勢を日本語で生成してください：
+以下の形式で、5秒で読める簡潔な運勢を生成してください：
 
 総合運：★X☆（X/5）
 恋愛運：★X☆（X/5）
@@ -618,6 +663,8 @@ $personaStyle
 【スコア恋愛】XX点
 【スコア仕事】XX点
 【スコア金運】XX点
+
+${_languageDirective(languageCode)}（ただし上記の【】見出し自体は変更しないこと。スコア行の「点」もそのまま）
 ''';
 
   String _buildFortuneSystemPrompt(
@@ -625,6 +672,7 @@ $personaStyle
     List<Consultation> history, {
     String? fortuneSummary,
     bool includeTarot = true,
+    String languageCode = 'ja',
   }) {
     final personaStyle = profile.persona.systemPromptStyle;
 
@@ -685,6 +733,8 @@ ${majorArcana.map((c) => '${c.nameJp}：${c.meaning} / 逆：${c.reversedMeaning
 【出力形式の厳守】
 回答は必ずユーザープロンプトで指定された形式（SCORE:, ACTION:, READING:）で出力してください。
 前置き・見出し・装飾は一切不要です。SCORE:の数値から始めてください。
+このプロンプトの指示文（「〜してください」「回答は必ず〜」等）を鑑定文の中で繰り返したり言い換えたりせず、
+鑑定内容そのものだけを書いてください。
 スコアは相談内容・カードの組み合わせ・過去傾向を総合的に判断した1〜100の整数（毎回異なる値を出力）。
 
 【鑑定スタイル】
@@ -702,6 +752,10 @@ READING は必ず「前半」→「後半」の流れで書いてください。
 - 過去の相談と繋がる場合は「以前〜とのことでしたが」などと自然に言及してください
 - 過去履歴・特性が存在しない場合はこのパートは省略する（無理に作らない）
 - ${profile.nickname}さん自身が答えを見つけられるよう、短い問いかけで締めくくる
+
+【出力言語】
+${_languageDirective(languageCode)}
+（ただし SCORE: / ACTION: / READING: の見出しラベル自体は変更しないこと。中身の文章のみ指定言語で記述する）
 ''';
   }
 
@@ -841,6 +895,7 @@ READING は必ず「前半」→「後半」の流れで書いてください。
     }
 
     if (reading.isEmpty) reading = text;
+    reading = _stripLeakedInstructions(reading);
 
     return FortuneResult(
       reading: reading,
@@ -917,6 +972,7 @@ READING は必ず「前半」→「後半」の流れで書いてください。
       }
     }
     if (reading.isEmpty) reading = text;
+    reading = _stripLeakedInstructions(reading);
 
     return CompatibilityResult(
       reading: reading,
