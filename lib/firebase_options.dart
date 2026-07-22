@@ -48,13 +48,13 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDo80X9b2h8NpB1jxAwO75ELOYJyDMt1Yw',
-    appId: '1:216377882454:ios:897b7a41ffc89c5ad108f7',
+    appId: '1:216377882454:ios:6653890131ac85ffd108f7',
     messagingSenderId: '216377882454',
     projectId: 'petit-works-apps-9029a',
     storageBucket: 'petit-works-apps-9029a.firebasestorage.app',
     androidClientId: '216377882454-2n890sghfm1va9k0bnj78ronfbd522bt.apps.googleusercontent.com',
-    iosClientId: '216377882454-m5mk6vn2hc895v58d1v0rpl98isqf9i5.apps.googleusercontent.com',
-    iosBundleId: 'com.petitworksapps.cometrueaifortune',
+    iosClientId: '216377882454-9u6mhkie1grjvi3revge14c4d7i5dk5p.apps.googleusercontent.com',
+    iosBundleId: 'com.yourwish.cometrueaifortune',
   );
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCkIt1e0hN8K3dl7HN2CoH_h95ztkNrgmg',
