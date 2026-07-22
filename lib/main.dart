@@ -4,7 +4,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:myfortune/core/locale/locale_controller.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
+import 'package:myfortune/l10n/app_localizations.dart';
 import 'package:myfortune/data/models/user_profile.dart';
 import 'package:myfortune/data/repositories/user_repository.dart';
 import 'package:myfortune/data/services/notification_service.dart';
@@ -33,6 +35,12 @@ Future<void> main() async {
     );
   } catch (e) {
     debugPrint('Firebase init error: $e');
+  }
+
+  try {
+    await LocaleController.instance.load();
+  } catch (e) {
+    debugPrint('LocaleController load error: $e');
   }
 
   try {
@@ -79,28 +87,38 @@ class MyFortuneApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
-      title: 'マイフォーチューン',
-      theme: AppTheme.dark,
-      debugShowCheckedModeBanner: false,
-      locale: const Locale('ja', 'JP'),
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('ja', 'JP'),
-        Locale('en', 'US'),
-      ],
-      home: const _StartupRouter(),
+    return ValueListenableBuilder<Locale>(
+      valueListenable: LocaleController.instance.locale,
+      builder: (context, locale, _) {
+        return MaterialApp(
+          navigatorKey: navigatorKey,
+          title: 'マイフォーチューン',
+          theme: AppTheme.dark,
+          debugShowCheckedModeBanner: false,
+          locale: locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const _StartupRouter(),
+        );
+      },
     );
   }
 }
 
-class _StartupRouter extends StatelessWidget {
+class _StartupRouter extends StatefulWidget {
   const _StartupRouter();
+
+  @override
+  State<_StartupRouter> createState() => _StartupRouterState();
+}
+
+class _StartupRouterState extends State<_StartupRouter> {
+  late final Future<Widget> _future = _resolve();
 
   Future<Widget> _resolve() async {
     try {
@@ -181,7 +199,7 @@ class _StartupRouter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Widget>(
-      future: _resolve(),
+      future: _future,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const OnboardingScreen();
