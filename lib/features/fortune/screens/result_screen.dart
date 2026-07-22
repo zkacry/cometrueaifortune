@@ -12,6 +12,7 @@ import 'package:myfortune/data/repositories/action_item_repository.dart';
 import 'package:myfortune/data/repositories/consultation_repository.dart';
 import 'package:myfortune/data/services/ad_service.dart';
 import 'package:myfortune/data/services/database_service.dart';
+import 'package:myfortune/l10n/app_localizations.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
   final Consultation consultation;
@@ -40,7 +41,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
 
   // 広告関連
   final AdService _adService = AdService();
-  late InterstitialAd? _interstitialAd;
+  InterstitialAd? _interstitialAd;
 
   @override
   void initState() {
@@ -115,13 +116,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     return AppTheme.error;
   }
 
-  String get _scoreLabel {
+  String _scoreLabel(AppLocalizations t) {
     final s = widget.consultation.score ?? 60;
-    if (s >= 80) return '大吉';
-    if (s >= 65) return '吉';
-    if (s >= 50) return '中吉';
-    if (s >= 35) return '小吉';
-    return '凶';
+    if (s >= 80) return t.rankDaikichi;
+    if (s >= 65) return t.rankKichi;
+    if (s >= 50) return t.rankChukichi;
+    if (s >= 35) return t.rankShokichi;
+    return t.rankKyo;
   }
 
   /// アクションをチェックしたとき自動保存
@@ -159,6 +160,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final consultation = widget.consultation;
     final committedCount = _committed.where((c) => c).length;
 
@@ -178,7 +180,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('鑑定結果'),
+        title: Text(t.resultAppBarTitle),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: _onClosePressed,
@@ -201,12 +203,12 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                 border: Border.all(
                     color: AppTheme.success.withValues(alpha: 0.3)),
               ),
-              child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.check_circle_outline,
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.check_circle_outline,
                     color: AppTheme.success, size: 14),
-                SizedBox(width: 5),
-                Text('記録に自動保存済み',
-                    style: TextStyle(
+                const SizedBox(width: 5),
+                Text(t.resultAutoSaved,
+                    style: const TextStyle(
                         color: AppTheme.success, fontSize: 12)),
               ]),
             ),
@@ -216,7 +218,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             Center(
               child: Column(children: [
                 Text(
-                  _scoreLabel,
+                  _scoreLabel(t),
                   style: TextStyle(
                     color: _scoreColor,
                     fontSize: 28,
@@ -245,9 +247,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '✨ この占い、当たりましたか？',
-                    style: TextStyle(
+                  Text(
+                    t.resultHitQuestion,
+                    style: const TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -258,7 +260,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                     children: [
                       Expanded(
                         child: _HitButton(
-                          label: '当たった',
+                          label: t.hitYes,
                           emoji: '🎯',
                           isSelected: _wasTrue == true,
                           onTap: () => _updateWasTrue(true),
@@ -267,7 +269,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _HitButton(
-                          label: 'わからない',
+                          label: t.hitUnknown,
                           emoji: '❓',
                           isSelected: _wasTrue == null,
                           onTap: () => _updateWasTrue(null),
@@ -276,7 +278,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _HitButton(
-                          label: '外れた',
+                          label: t.hitNo,
                           emoji: '✗',
                           isSelected: _wasTrue == false,
                           onTap: () => _updateWasTrue(false),
@@ -294,7 +296,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: List.generate(3, (i) {
-                  final positions = ['過去', '現在', '未来'];
+                  final positions = [t.positionPast, t.positionPresent, t.positionFuture];
                   return Column(children: [
                     Text(positions[i],
                         style: const TextStyle(
@@ -336,9 +338,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             // 推奨アクション
             if (consultation.suggestedActions.isNotEmpty) ...[
               Row(children: [
-                const Text(
-                  '✨ 今後のアクション候補',
-                  style: TextStyle(
+                Text(
+                  t.resultActionsHeading,
+                  style: const TextStyle(
                       color: AppTheme.accent,
                       fontSize: 13,
                       letterSpacing: 1),
@@ -346,15 +348,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                 const Spacer(),
                 if (committedCount > 0)
                   Text(
-                    '$committedCount件取り組む',
+                    t.resultActionsCommitted(committedCount),
                     style: const TextStyle(
                         color: AppTheme.success, fontSize: 12),
                   ),
               ]),
               const SizedBox(height: 6),
-              const Text(
-                '取り組みたいアクションにチェックを入れると自動記録されます',
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+              Text(
+                t.resultActionsSubtitle,
+                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 11),
               ),
               const SizedBox(height: 10),
               ...consultation.suggestedActions.asMap().entries.map(
@@ -380,8 +382,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('🎯 アクションリストに追加しました',
-                        style: TextStyle(
+                    Text(t.resultActionsAddedHeading,
+                        style: const TextStyle(
                             color: AppTheme.success,
                             fontSize: 13,
                             fontWeight: FontWeight.bold)),
@@ -399,9 +401,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                                       fontSize: 12)),
                             )),
                     const SizedBox(height: 6),
-                    const Text(
-                      '記録タブ → アクション で進捗を管理できます',
-                      style: TextStyle(
+                    Text(
+                      t.resultActionsAddedHint,
+                      style: const TextStyle(
                           color: AppTheme.textSecondary, fontSize: 11),
                     ),
                   ],
@@ -415,8 +417,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
               width: double.infinity,
               child: TextButton(
                 onPressed: _onClosePressed,
-                child: const Text('閉じる',
-                    style: TextStyle(color: AppTheme.textSecondary)),
+                child: Text(t.commonClose,
+                    style: const TextStyle(color: AppTheme.textSecondary)),
               ),
             ),
           ],
