@@ -1,10 +1,10 @@
-name: Build iOS (unsigned check)
+name: Build iOS (TestFlight)
 
 on:
   workflow_dispatch:
 
 jobs:
-  build-ios:
+  build:
     runs-on: macos-latest
 
     steps:
@@ -16,19 +16,31 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Get dependencies
+      - name: Flutter pub get
         run: flutter pub get
+
+      - name: Setup Ruby / Bundler
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios
 
       - name: Install CocoaPods dependencies
         run: |
           cd ios
           pod install --repo-update
 
-      - name: Build IPA (unsigned)
+      - name: Build iOS (unsigned)
         run: flutter build ios --release --no-codesign
 
-      - name: Upload IPA artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-release.ipa
-          path: build/ios/iphoneos/Runner.app
+      - name: Fastlane - fetch signing & upload TestFlight
+        working-directory: ios
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: bundle exec fastlane beta
