@@ -26,11 +26,6 @@ jobs:
           bundler-cache: true
           working-directory: ios
 
-      - name: Install CocoaPods dependencies
-        run: |
-          cd ios
-          pod install --repo-update
-
       - name: Build iOS (unsigned)
         run: flutter build ios --release --no-codesign
 
