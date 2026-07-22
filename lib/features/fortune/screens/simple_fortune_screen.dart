@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:myfortune/core/constants/fortune_config.dart';
+import 'package:myfortune/core/locale/locale_controller.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
 import 'package:myfortune/data/models/consultation.dart';
 import 'package:myfortune/data/models/user_profile.dart';
@@ -9,6 +11,7 @@ import 'package:myfortune/data/services/claude_service.dart';
 import 'package:myfortune/data/services/fortune_summary_service.dart';
 import 'package:myfortune/data/services/usage_service.dart';
 import 'package:myfortune/features/fortune/screens/result_screen.dart';
+import 'package:myfortune/l10n/app_localizations.dart';
 
 /// タロット・数秘術・相性以外の汎用フル占い画面
 class SimpleFortuneScreen extends StatefulWidget {
@@ -38,15 +41,15 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
 
   // 悩みカテゴリ（夢・ルーン・ホロスコープ共通）
   String? _selectedCategory;
-  static const _categories = [
-    ('💕 恋愛・パートナー', '恋愛・パートナー'),
-    ('💼 仕事・キャリア', '仕事・キャリア'),
-    ('👥 人間関係', '人間関係'),
-    ('💰 お金・将来', 'お金・将来'),
-    ('🌿 健康・メンタル', '健康・メンタル'),
-    ('🌟 進路・転換期', '進路・転換期'),
-    ('✏️ その他', '__other__'),
-  ];
+  List<(String, String)> _categories(AppLocalizations t) => [
+        (t.worryCategoryLove, t.worryCategoryLove),
+        (t.worryCategoryWork, t.worryCategoryWork),
+        (t.worryCategoryRelationship, t.worryCategoryRelationship),
+        (t.worryCategoryMoney, t.worryCategoryMoney),
+        (t.worryCategoryHealth, t.worryCategoryHealth),
+        (t.worryCategoryPath, t.worryCategoryPath),
+        (t.worryCategoryOther, '__other__'),
+      ];
 
   @override
   void dispose() {
@@ -78,7 +81,7 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
         return _selectedBloodType ?? '';
       case FortuneType.pastLife:
       case FortuneType.auspiciousCalendar:
-        return '（プロフィール情報から鑑定）';
+        return AppLocalizations.of(context)!.simpleAutoProfileReading;
       default:
         return _selectedCategory == '__other__'
             ? _inputController.text.trim()
@@ -106,6 +109,7 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
         extraContext: widget.type == FortuneType.fourPillars
             ? _extraController.text.trim()
             : null,
+        languageCode: LocaleController.instance.locale.value.languageCode,
       );
       debugPrint('[Reading] AI占い完了: score=${result.score}');
 
@@ -129,9 +133,9 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
         if (mounted) {
           setState(() => _loading = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('占い結果の保存に失敗しました。もう一度お試しください。'),
-              duration: Duration(seconds: 4),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.errorGenericReading),
+              duration: const Duration(seconds: 4),
             ),
           );
         }
@@ -172,15 +176,16 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
       debugPrint('[Reading] ❌ 予期しないエラー: $e');
       if (mounted) {
         setState(() => _loading = false);
-        String errorMessage = '鑑定中にエラーが発生しました。もう一度お試しください。';
+        final t = AppLocalizations.of(context)!;
+        String errorMessage = t.errorGenericReading;
         if (e.toString().contains('Web') || e.toString().contains('CORS')) {
-          errorMessage = 'Androidアプリをご使用ください';
+          errorMessage = t.errorWebNotSupported;
         } else if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
-          errorMessage = 'APIの認証に失敗しました。設定を確認してください。';
+          errorMessage = t.errorApiAuth;
         } else if (e.toString().contains('timeout') || e.toString().contains('TimeoutException')) {
-          errorMessage = '接続がタイムアウトしました。ネットワークを確認してください。';
+          errorMessage = t.errorTimeout;
         } else if (e.toString().contains('No internet') || e.toString().contains('Connection')) {
-          errorMessage = 'インターネット接続を確認してください。';
+          errorMessage = t.errorNoInternet;
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -195,6 +200,7 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.type.displayName),
@@ -214,7 +220,7 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
                   const CircularProgressIndicator(
                       color: AppTheme.accent, strokeWidth: 2),
                   const SizedBox(height: 16),
-                  Text('${widget.type.displayName}で鑑定中…',
+                  Text(t.simpleLoadingFormat(widget.type.displayName),
                       style: const TextStyle(
                           color: AppTheme.textSecondary, fontSize: 14)),
                 ],
@@ -261,7 +267,7 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
                       style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 18)),
                       child: Text(
-                        '${widget.type.emoji} 鑑定する',
+                        t.simpleReadingButton(widget.type.emoji),
                         style: const TextStyle(
                             fontSize: 16,
                             letterSpacing: 2,
@@ -280,8 +286,8 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('あなたの血液型は？',
-            style: TextStyle(
+        Text(AppLocalizations.of(context)!.bloodTypeQuestion,
+            style: const TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w300)),
@@ -329,18 +335,19 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
 
   // 夢の内容テキスト入力
   Widget _buildDreamInput() {
+    final t = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('どんな夢を見ましたか？',
-            style: TextStyle(
+        Text(t.dreamQuestion,
+            style: const TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w300)),
         const SizedBox(height: 4),
-        const Text('キーワードでも、詳細でも構いません',
+        Text(t.dreamSubtitle,
             style:
-                TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
         const SizedBox(height: 12),
         TextField(
           controller: _inputController,
@@ -348,8 +355,8 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
           autofocus: true,
           onChanged: (_) => setState(() {}),
           style: const TextStyle(color: AppTheme.textPrimary, height: 1.8),
-          decoration: const InputDecoration(
-            hintText: '例：空を飛んでいた、水の中にいた、知らない人に会った…',
+          decoration: InputDecoration(
+            hintText: t.dreamHint,
           ),
         ),
       ],
@@ -376,7 +383,7 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
                   fontWeight: FontWeight.w500,
                   fontSize: 15)),
           Text(
-            '${p.birthdate.year}年${p.birthdate.month}月${p.birthdate.day}日 ${p.zodiacSign}',
+            '${DateFormat.yMMMMd(LocaleController.instance.locale.value.languageCode).format(p.birthdate)} ${p.zodiacSign}',
             style: const TextStyle(
                 color: AppTheme.textSecondary, fontSize: 12),
           ),
@@ -387,13 +394,14 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
 
   // 四柱推命：出生時刻を追加入力
   Widget _buildFourPillarsInput() {
+    final t = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildAutoInput(),
         const SizedBox(height: 16),
-        const Text('出生時刻（わかれば）',
-            style: TextStyle(
+        Text(t.fourPillarsBirthTimeLabel,
+            style: const TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 14,
                 fontWeight: FontWeight.w300)),
@@ -401,8 +409,8 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
         TextField(
           controller: _extraController,
           style: const TextStyle(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(
-            hintText: '例：午前8時30分（不明の場合は空欄でOK）',
+          decoration: InputDecoration(
+            hintText: t.fourPillarsBirthTimeHint,
           ),
         ),
       ],
@@ -411,11 +419,12 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
 
   // 悩みカテゴリチップ（ルーン・ホロスコープなど）
   Widget _buildCategoryInput() {
+    final t = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('今、何が気になっていますか？',
-            style: TextStyle(
+        Text(t.worryPrompt,
+            style: const TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w300)),
@@ -423,7 +432,7 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
         Wrap(
           spacing: 10,
           runSpacing: 10,
-          children: _categories.map((cat) {
+          children: _categories(t).map((cat) {
             final selected = _selectedCategory == cat.$2;
             return GestureDetector(
               onTap: () {
@@ -467,8 +476,8 @@ class _SimpleFortuneScreenState extends State<SimpleFortuneScreen> {
             onChanged: (_) => setState(() {}),
             style: const TextStyle(
                 color: AppTheme.textPrimary, height: 1.8),
-            decoration: const InputDecoration(
-              hintText: '気になっていることを教えてください…',
+            decoration: InputDecoration(
+              hintText: t.worryHint,
             ),
           ),
         ],

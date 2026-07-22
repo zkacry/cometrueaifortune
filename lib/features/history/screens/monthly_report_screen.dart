@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myfortune/core/constants/fortune_config.dart';
+import 'package:myfortune/core/locale/locale_controller.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
 import 'package:myfortune/data/models/consultation.dart';
 import 'package:myfortune/data/models/user_profile.dart';
@@ -72,6 +73,7 @@ class _MonthlyReportScreenState extends State<MonthlyReportScreen> {
         profile: widget.profile,
         consultations: _consultations,
         monthKey: _monthKey,
+        languageCode: LocaleController.instance.locale.value.languageCode,
       );
       if (mounted) setState(() => _aiSummary = summary);
     } catch (e) {

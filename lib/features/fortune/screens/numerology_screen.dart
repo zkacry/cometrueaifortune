@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myfortune/core/constants/fortune_config.dart';
+import 'package:myfortune/core/locale/locale_controller.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
 import 'package:myfortune/data/models/consultation.dart';
 import 'package:myfortune/data/models/user_profile.dart';
@@ -9,17 +10,18 @@ import 'package:myfortune/data/services/claude_service.dart';
 import 'package:myfortune/data/services/fortune_summary_service.dart';
 import 'package:myfortune/data/services/usage_service.dart';
 import 'package:myfortune/features/fortune/screens/result_screen.dart';
+import 'package:myfortune/l10n/app_localizations.dart';
 
-const _numWorryCategories = [
-  ('💕 恋愛・パートナー', '恋愛・パートナー'),
-  ('💼 仕事・キャリア', '仕事・キャリア'),
-  ('👥 人間関係', '人間関係'),
-  ('💰 お金・将来', 'お金・将来'),
-  ('🏠 家族', '家族'),
-  ('🌿 健康・メンタル', '健康・メンタル'),
-  ('🌟 進路・転換期', '進路・転換期'),
-  ('✏️ その他', '__other__'),
-];
+List<(String, String)> _numWorryCategories(AppLocalizations t) => [
+      (t.worryCategoryLove, t.worryCategoryLove),
+      (t.worryCategoryWork, t.worryCategoryWork),
+      (t.worryCategoryRelationship, t.worryCategoryRelationship),
+      (t.worryCategoryMoney, t.worryCategoryMoney),
+      (t.worryCategoryFamily, t.worryCategoryFamily),
+      (t.worryCategoryHealth, t.worryCategoryHealth),
+      (t.worryCategoryPath, t.worryCategoryPath),
+      (t.worryCategoryOther, '__other__'),
+    ];
 
 class NumerologyScreen extends StatefulWidget {
   final UserProfile profile;
@@ -62,7 +64,7 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
   Future<void> _getReading() async {
     if (_worryController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('悩みを入力してください')));
+        SnackBar(content: Text(AppLocalizations.of(context)!.worryEmptyError)));
       return;
     }
     setState(() => _loading = true);
@@ -79,6 +81,7 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
         worry: _worryController.text.trim(),
         recentConsultations: widget.recentConsultations,
         fortuneSummary: summary,
+        languageCode: LocaleController.instance.locale.value.languageCode,
       );
 
       final consultation = Consultation(
@@ -123,33 +126,34 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
       if (mounted) {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('鑑定中にエラーが発生しました。')));
+          SnackBar(content: Text(AppLocalizations.of(context)!.errorGenericReading)));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('数秘術占い'),
+        title: Text(t.numerologyAppBarTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: _loading
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('🔢', style: TextStyle(fontSize: 56)),
-                  SizedBox(height: 24),
-                  CircularProgressIndicator(
+                  const Text('🔢', style: TextStyle(fontSize: 56)),
+                  const SizedBox(height: 24),
+                  const CircularProgressIndicator(
                       color: AppTheme.accent, strokeWidth: 2),
-                  SizedBox(height: 16),
-                  Text('数字が語りかけています…',
-                      style: TextStyle(
+                  const SizedBox(height: 16),
+                  Text(t.numerologyLoading,
+                      style: const TextStyle(
                           color: AppTheme.textSecondary, fontSize: 14)),
                 ],
               ),
@@ -173,8 +177,8 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('ライフパス',
-                              style: TextStyle(
+                          Text(t.numerologyLifePath,
+                              style: const TextStyle(
                                   color: AppTheme.textSecondary,
                                   fontSize: 10)),
                           Text(
@@ -190,17 +194,17 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    '今、何が気になっていますか？',
-                    style: TextStyle(
+                  Text(
+                    t.worryPrompt,
+                    style: const TextStyle(
                         color: AppTheme.textPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.w300),
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    'テーマを選んで数字に聞いてみましょう。',
-                    style: TextStyle(
+                  Text(
+                    t.numerologySubtitle,
+                    style: const TextStyle(
                         color: AppTheme.textSecondary, fontSize: 13),
                   ),
                   const SizedBox(height: 16),
@@ -208,7 +212,7 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
-                    children: _numWorryCategories.map((cat) {
+                    children: _numWorryCategories(t).map((cat) {
                       final isSelected = _selectedCategory == cat.$2;
                       return GestureDetector(
                         onTap: () {
@@ -255,8 +259,8 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
                       autofocus: true,
                       style: const TextStyle(
                           color: AppTheme.textPrimary, height: 1.8),
-                      decoration: const InputDecoration(
-                        hintText: '気になっていることを教えてください…',
+                      decoration: InputDecoration(
+                        hintText: t.worryHint,
                       ),
                     ),
                   ],
@@ -268,8 +272,8 @@ class _NumerologyScreenState extends State<NumerologyScreen> {
                       style: ElevatedButton.styleFrom(
                           padding:
                               const EdgeInsets.symmetric(vertical: 18)),
-                      child: const Text('数字に聞く 🔢',
-                          style: TextStyle(
+                      child: Text(t.numerologyButton,
+                          style: const TextStyle(
                               fontSize: 16,
                               letterSpacing: 2,
                               color: Colors.white)),

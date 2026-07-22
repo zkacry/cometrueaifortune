@@ -9,6 +9,7 @@ import 'package:myfortune/features/fortune/screens/omikuji_screen.dart';
 import 'package:myfortune/features/fortune/screens/simple_fortune_screen.dart';
 import 'package:myfortune/features/fortune/screens/tarot_screen.dart';
 import 'package:myfortune/features/settings/screens/upgrade_screen.dart';
+import 'package:myfortune/l10n/app_localizations.dart';
 
 class FortuneTypeScreen extends StatelessWidget {
   final UserProfile profile;
@@ -21,33 +22,33 @@ class FortuneTypeScreen extends StatelessWidget {
   });
 
   // プラン別に表示する占術グループ（hidden=trueは除外）
-  static const _sections = [
-    (
-      label: '✨ いつでも無料',
-      types: [
-        FortuneType.omikuji,
-        FortuneType.tarot,
-        FortuneType.compatibility,
-        FortuneType.bloodType,
-      ],
-    ),
-    (
-      label: '🌙 Light以上',
-      types: [
-        FortuneType.numerology,
-        FortuneType.rune,
-        FortuneType.pastLife,
-        FortuneType.horoscope,
-      ],
-    ),
-    (
-      label: '🏮 Pro限定',
-      types: [
-        FortuneType.fourPillars,
-        FortuneType.auspiciousCalendar,
-      ],
-    ),
-  ];
+  List<({String label, List<FortuneType> types})> _sections(AppLocalizations t) => [
+        (
+          label: t.fortuneTypeFreeSection,
+          types: [
+            FortuneType.omikuji,
+            FortuneType.tarot,
+            FortuneType.compatibility,
+            FortuneType.bloodType,
+          ],
+        ),
+        (
+          label: t.fortuneTypeLightSection,
+          types: [
+            FortuneType.numerology,
+            FortuneType.rune,
+            FortuneType.pastLife,
+            FortuneType.horoscope,
+          ],
+        ),
+        (
+          label: t.fortuneTypeProSection,
+          types: [
+            FortuneType.fourPillars,
+            FortuneType.auspiciousCalendar,
+          ],
+        ),
+      ];
 
   void _navigate(BuildContext context, FortuneType type) {
     // プラン制限チェック
@@ -92,24 +93,25 @@ class FortuneTypeScreen extends StatelessWidget {
   }
 
   void _showUpgradeDialog(BuildContext context, FortuneType type) {
+    final t = AppLocalizations.of(context)!;
     final required = type.requiredPlan;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.card,
         title: Text(
-          '${type.displayName}は${required.displayName}プランから',
+          t.fortuneTypeUpgradeDialogTitle(type.displayName, required.displayName),
           style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16),
         ),
         content: Text(
-          '月${required.monthlyPrice}円でこの占術を含む全機能が解放されます。',
+          t.fortuneTypeUpgradeDialogBody(required.monthlyPrice),
           style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('キャンセル',
-                style: TextStyle(color: AppTheme.textSecondary)),
+            child: Text(t.commonCancel,
+                style: const TextStyle(color: AppTheme.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -120,7 +122,7 @@ class FortuneTypeScreen extends StatelessWidget {
                     builder: (_) => UpgradeScreen(profile: profile)),
               );
             },
-            child: const Text('アップグレード'),
+            child: Text(t.commonUpgrade),
           ),
         ],
       ),
@@ -129,9 +131,10 @@ class FortuneTypeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('占術を選ぶ'),
+        title: Text(t.fortuneTypeAppBarTitle),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
@@ -141,12 +144,12 @@ class FortuneTypeScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         children: [
           Text(
-            '今月残り${profile.remainingReadings}回',
+            t.fortuneTypeRemaining(profile.remainingReadings),
             style:
                 const TextStyle(color: AppTheme.accent, fontSize: 13),
           ),
           const SizedBox(height: 20),
-          for (final section in _sections) ...[
+          for (final section in _sections(t)) ...[
             _SectionHeader(label: section.label),
             const SizedBox(height: 10),
             for (final type in section.types) ...[

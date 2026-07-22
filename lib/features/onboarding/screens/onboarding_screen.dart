@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:myfortune/core/constants/tarot_data.dart';
+import 'package:myfortune/core/locale/locale_controller.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
 import 'package:myfortune/data/models/user_profile.dart';
 import 'package:myfortune/data/repositories/user_repository.dart';
 import 'package:myfortune/data/services/notification_service.dart';
 import 'package:myfortune/features/home/screens/home_screen.dart';
+import 'package:myfortune/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 最小限オンボーディング：名前 + 生年月日だけで30秒以内に完了
@@ -32,7 +35,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       initialDate: _selectedDate,
       firstDate: DateTime(1940),
       lastDate: DateTime.now(),
-      locale: const Locale('ja', 'JP'),
+      locale: LocaleController.instance.locale.value,
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: const ColorScheme.dark(
@@ -52,12 +55,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ニックネームを入力してください')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.onboardingEnterNickname)),
       );
       return;
     }
 
     setState(() => _loading = true);
+    final t = AppLocalizations.of(context)!;
 
     try {
       final repo = UserRepository();
@@ -78,8 +82,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       await NotificationService.requestPermissions();
       await NotificationService.scheduleDailyNotification(
         hour: profile.notificationHour, // デフォルト 9時
-        title: '運勢のお時間です',
-        body: '${profile.nickname}さん、今日の運勢をチェックしましょう ✨',
+        title: t.onboardingNotificationTitle,
+        body: t.onboardingNotificationBody(profile.nickname),
       );
 
       if (mounted) {
@@ -91,7 +95,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       debugPrint('Onboarding error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('エラーが発生しました。もう一度お試しください。')),
+          SnackBar(content: Text(t.onboardingGenericError)),
         );
         setState(() => _loading = false);
       }
@@ -101,6 +105,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final zodiac = getZodiacSign(_selectedDate);
+    final t = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -111,18 +116,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 32),
-              const Text(
-                '✨ マイフォーチューン',
-                style: TextStyle(
+              Text(
+                t.onboardingWelcomeTitle,
+                style: const TextStyle(
                   color: AppTheme.accent,
                   fontSize: 13,
                   letterSpacing: 2,
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
-                'あなたのことを\n教えてください',
-                style: TextStyle(
+              Text(
+                t.onboardingHeading,
+                style: const TextStyle(
                   color: AppTheme.textPrimary,
                   fontSize: 28,
                   fontWeight: FontWeight.w300,
@@ -130,36 +135,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                '30秒で今日の運勢がわかります',
-                style: TextStyle(
+              Text(
+                t.onboardingSubtitle,
+                style: const TextStyle(
                     color: AppTheme.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: 40),
 
               // ニックネーム
-              const Text(
-                'ニックネーム',
-                style: TextStyle(
+              Text(
+                t.onboardingNicknameLabel,
+                style: const TextStyle(
                     color: AppTheme.textSecondary, fontSize: 12, letterSpacing: 1),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _nameController,
                 style: const TextStyle(color: AppTheme.textPrimary, fontSize: 18),
-                decoration: const InputDecoration(
-                  hintText: 'あいこ',
+                decoration: InputDecoration(
+                  hintText: t.onboardingNicknameHint,
                   contentPadding:
-                      EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 ),
               ),
 
               const SizedBox(height: 24),
 
               // 生年月日
-              const Text(
-                '生年月日',
-                style: TextStyle(
+              Text(
+                t.onboardingBirthdateLabel,
+                style: const TextStyle(
                     color: AppTheme.textSecondary, fontSize: 12, letterSpacing: 1),
               ),
               const SizedBox(height: 8),
@@ -177,7 +182,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: Row(
                     children: [
                       Text(
-                        '${_selectedDate.year}年${_selectedDate.month}月${_selectedDate.day}日',
+                        DateFormat.yMMMMd(
+                                LocaleController.instance.locale.value.languageCode)
+                            .format(_selectedDate),
                         style: const TextStyle(
                             color: AppTheme.textPrimary, fontSize: 18),
                       ),
@@ -212,9 +219,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 2),
                         )
-                      : const Text(
-                          '今すぐ占う ✨',
-                          style: TextStyle(
+                      : Text(
+                          t.onboardingStartButton,
+                          style: const TextStyle(
                               fontSize: 16,
                               letterSpacing: 2,
                               color: Colors.white),

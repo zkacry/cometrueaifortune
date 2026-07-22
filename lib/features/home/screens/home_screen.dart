@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:myfortune/core/constants/fortune_config.dart';
+import 'package:myfortune/core/locale/locale_controller.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
 import 'package:myfortune/data/models/consultation.dart';
 import 'package:myfortune/data/models/user_profile.dart';
@@ -11,6 +12,7 @@ import 'package:myfortune/features/fortune/screens/fortune_type_screen.dart';
 import 'package:myfortune/features/history/screens/history_screen.dart';
 import 'package:myfortune/features/home/widgets/daily_fortune_card.dart';
 import 'package:myfortune/features/settings/screens/settings_screen.dart';
+import 'package:myfortune/l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserProfile profile;
@@ -55,7 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // 今日の運勢を取得（Webは非対応）
     if (kIsWeb) {
       setState(() {
-        _fortuneError = 'Web版では占いAPIは利用できません';
+        _fortuneError = mounted
+            ? AppLocalizations.of(context)!.homeWebNotSupported
+            : 'Web版では占いAPIは利用できません';
         _loadingFortune = false;
       });
       return;
@@ -64,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final fortune = await ClaudeService().generateDailyFortune(
         profile: _profile,
+        languageCode: LocaleController.instance.locale.value.languageCode,
       );
       if (mounted) {
         setState(() {
@@ -75,7 +80,8 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint('DailyFortune error: $e');
       if (mounted) {
         setState(() {
-          _fortuneError = '運勢の取得に失敗しました\n${e.toString().replaceAll('Exception: ', '')}';
+          _fortuneError =
+              '${AppLocalizations.of(context)!.homeFetchFailed}\n${e.toString().replaceAll('Exception: ', '')}';
           _loadingFortune = false;
         });
       }
@@ -111,18 +117,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showUpgradeDialog() {
+    final t = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: const Text('今月の占い回数を使い切りました ✨',
-            style: TextStyle(color: AppTheme.textPrimary, fontSize: 16)),
+        title: Text(t.homeLimitDialogTitle,
+            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 16)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${_profile.plan.displayName}プランの月${_profile.plan.monthlyReadingLimit}回をすべて使い切りました。',
+              t.homeLimitDialogBody(
+                  _profile.plan.displayName, _profile.plan.monthlyReadingLimit),
               style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 12),
@@ -133,14 +141,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: AppTheme.accent.withValues(alpha: 0.3)),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('💫 Light プラン  月680円',
-                      style: TextStyle(color: AppTheme.accent, fontSize: 14, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4),
-                  Text('月50回まで占い放題\n過去パターン分析・記憶型AI',
-                      style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                  Text(t.homePromoTitle,
+                      style: const TextStyle(color: AppTheme.accent, fontSize: 14, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(t.homePromoSubtitle,
+                      style: const TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
                 ],
               ),
             ),
@@ -149,14 +157,14 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('来月まで待つ', style: TextStyle(color: AppTheme.textSecondary)),
+            child: Text(t.homeWaitNextMonth, style: const TextStyle(color: AppTheme.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               // TODO: アップグレード画面へ遷移
             },
-            child: const Text('アップグレード'),
+            child: Text(t.commonUpgrade),
           ),
         ],
       ),
@@ -165,9 +173,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('M Y F O R T U N E'),
+        title: Text(t.homeAppBarTitle),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -222,17 +231,17 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDestination(
             icon: _NavIcon(asset: 'assets/icons/icon_home.jpg', selected: false),
             selectedIcon: _NavIcon(asset: 'assets/icons/icon_home.jpg', selected: true),
-            label: 'ホーム',
+            label: t.navHome,
           ),
           NavigationDestination(
             icon: _NavIcon(asset: 'assets/icons/icon_record.jpg', selected: false),
             selectedIcon: _NavIcon(asset: 'assets/icons/icon_record.jpg', selected: true),
-            label: '記録',
+            label: t.navHistory,
           ),
           NavigationDestination(
             icon: _NavIcon(asset: 'assets/icons/icon_settings.jpg', selected: false),
             selectedIcon: _NavIcon(asset: 'assets/icons/icon_settings.jpg', selected: true),
-            label: '設定',
+            label: t.navSettings,
           ),
         ],
       ),
@@ -259,6 +268,7 @@ class _HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -266,7 +276,7 @@ class _HomeTab extends StatelessWidget {
         children: [
           // 挨拶
           Text(
-            'こんにちは、${profile.nickname}さん',
+            t.homeGreeting(profile.nickname),
             style: const TextStyle(
                 color: AppTheme.textSecondary, fontSize: 13, letterSpacing: 1),
           ),
@@ -298,13 +308,14 @@ class _HomeTab extends StatelessWidget {
               const Text('🔮', style: TextStyle(fontSize: 16)),
               const SizedBox(width: 8),
               Text(
-                '今月のフル占い：${profile.monthlyReadingCount} / ${profile.plan.monthlyReadingLimit}回',
+                t.homeMonthlyUsage(
+                    profile.monthlyReadingCount, profile.plan.monthlyReadingLimit),
                 style: const TextStyle(
                     color: AppTheme.textSecondary, fontSize: 13),
               ),
               const Spacer(),
               if (!profile.canUseReading)
-                const Text('上限', style: TextStyle(color: AppTheme.error, fontSize: 11)),
+                Text(t.homeLimitBadge, style: const TextStyle(color: AppTheme.error, fontSize: 11)),
             ]),
           ),
           const SizedBox(height: 20),
@@ -338,7 +349,7 @@ class _HomeTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  profile.canUseReading ? 'フル占いを始める' : '今月の回数上限に達しました',
+                  profile.canUseReading ? t.homeStartFullReading : t.homeLimitReached,
                   style: TextStyle(
                     color: profile.canUseReading
                         ? AppTheme.textPrimary
@@ -350,8 +361,8 @@ class _HomeTab extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   profile.canUseReading
-                      ? 'タロット・数秘術から選べます'
-                      : 'Lightプランで月50回に増やせます',
+                      ? t.homeStartSubtitle1
+                      : t.homeStartSubtitle2,
                   style: const TextStyle(
                       color: AppTheme.textSecondary, fontSize: 12),
                 ),
@@ -362,9 +373,9 @@ class _HomeTab extends StatelessWidget {
 
           // 最近の相談
           if (recentConsultations.isNotEmpty) ...[
-            const Text(
-              '最近の相談',
-              style: TextStyle(
+            Text(
+              t.homeRecentConsultations,
+              style: const TextStyle(
                   color: AppTheme.textSecondary,
                   fontSize: 12,
                   letterSpacing: 1),

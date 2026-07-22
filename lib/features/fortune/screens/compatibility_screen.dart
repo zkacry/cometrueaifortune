@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:myfortune/core/locale/locale_controller.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
 import 'package:myfortune/data/models/consultation.dart';
 import 'package:myfortune/data/models/user_profile.dart';
 import 'package:myfortune/data/services/claude_service.dart';
+import 'package:myfortune/l10n/app_localizations.dart';
 
 class CompatibilityScreen extends StatefulWidget {
   final UserProfile profile;
@@ -37,7 +40,7 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
       initialDate: _partnerBirthdate,
       firstDate: DateTime(1940),
       lastDate: DateTime.now(),
-      locale: const Locale('ja', 'JP'),
+      locale: LocaleController.instance.locale.value,
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: const ColorScheme.dark(
@@ -57,7 +60,7 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('相手の名前を入力してください')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.compatibilityEnterPartnerName)),
       );
       return;
     }
@@ -74,6 +77,7 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
         partnerName: name,
         partnerBirthdate: _partnerBirthdate,
         recentConsultations: widget.recentConsultations,
+        languageCode: LocaleController.instance.locale.value.languageCode,
       );
       if (mounted) setState(() => _result = result);
     } catch (e) {
@@ -86,9 +90,10 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('💕 相性占い'),
+        title: Text(t.compatibilityAppBarTitle),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
@@ -101,7 +106,7 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
           children: [
             // あなたの情報
             _InfoCard(
-              label: 'あなた',
+              label: t.compatibilityYou,
               name: widget.profile.nickname,
               zodiac: widget.profile.zodiacSign,
               birthdate: widget.profile.birthdate,
@@ -128,9 +133,9 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '相手',
-                    style: TextStyle(
+                  Text(
+                    t.compatibilityPartner,
+                    style: const TextStyle(
                       color: Color(0xFFE91E8C),
                       fontSize: 12,
                       letterSpacing: 1,
@@ -143,12 +148,12 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
                     controller: _nameController,
                     style: const TextStyle(
                         color: AppTheme.textPrimary, fontSize: 16),
-                    decoration: const InputDecoration(
-                      hintText: '相手の名前（ニックネーム可）',
+                    decoration: InputDecoration(
+                      hintText: t.compatibilityPartnerNameHint,
                       prefixIcon:
-                          Icon(Icons.person_outline, color: AppTheme.textSecondary),
+                          const Icon(Icons.person_outline, color: AppTheme.textSecondary),
                       contentPadding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -168,7 +173,9 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
                             color: AppTheme.textSecondary, size: 20),
                         const SizedBox(width: 12),
                         Text(
-                          '${_partnerBirthdate.year}年${_partnerBirthdate.month}月${_partnerBirthdate.day}日',
+                          DateFormat.yMMMMd(
+                                  LocaleController.instance.locale.value.languageCode)
+                              .format(_partnerBirthdate),
                           style: const TextStyle(
                               color: AppTheme.textPrimary, fontSize: 16),
                         ),
@@ -190,9 +197,9 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     backgroundColor: const Color(0xFFE91E8C),
                   ),
-                  child: const Text(
-                    '相性を占う 💕',
-                    style: TextStyle(
+                  child: Text(
+                    t.compatibilityStartButton,
+                    style: const TextStyle(
                         fontSize: 16,
                         letterSpacing: 2,
                         color: Colors.white),
@@ -202,16 +209,16 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
 
             // ローディング
             if (_isLoading) ...[
-              const Center(
+              Center(
                 child: Column(children: [
-                  CircularProgressIndicator(
+                  const CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
                         Color(0xFFE91E8C)),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
-                    '二人の相性を分析中...',
-                    style: TextStyle(
+                    t.compatibilityLoading,
+                    style: const TextStyle(
                         color: AppTheme.textSecondary, fontSize: 13),
                   ),
                 ]),
@@ -227,8 +234,8 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '占いに失敗しました。もう一度お試しください。',
-                  style: TextStyle(color: AppTheme.error, fontSize: 13),
+                  t.compatibilityError,
+                  style: const TextStyle(color: AppTheme.error, fontSize: 13),
                 ),
               ),
 
@@ -243,7 +250,7 @@ class _CompatibilityScreenState extends State<CompatibilityScreen> {
                     _result = null;
                     _nameController.clear();
                   }),
-                  child: const Text('もう一度占う'),
+                  child: Text(t.compatibilityRetryButton),
                 ),
               ),
             ],
@@ -311,7 +318,7 @@ class _InfoCard extends StatelessWidget {
                 fontWeight: FontWeight.w500),
           ),
           Text(
-            '$zodiac・${birthdate.year}年${birthdate.month}月${birthdate.day}日生',
+            '$zodiac・${DateFormat.yMMMMd(LocaleController.instance.locale.value.languageCode).format(birthdate)}',
             style: const TextStyle(
                 color: AppTheme.textSecondary, fontSize: 12),
           ),
@@ -328,6 +335,7 @@ class _CompatibilityResultWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -345,13 +353,13 @@ class _CompatibilityResultWidget extends StatelessWidget {
           ),
           child: Column(children: [
             Text(
-              '${result.partnerName}さんとの相性',
+              t.compatibilityResultTitle(result.partnerName),
               style: const TextStyle(
                   color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 8),
             Text(
-              '${result.overallScore}点',
+              t.scorePoints(result.overallScore),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 56,
@@ -359,7 +367,7 @@ class _CompatibilityResultWidget extends StatelessWidget {
               ),
             ),
             Text(
-              _scoreLabel(result.overallScore),
+              _scoreLabel(t, result.overallScore),
               style: const TextStyle(
                   color: Colors.white, fontSize: 16, letterSpacing: 2),
             ),
@@ -376,11 +384,11 @@ class _CompatibilityResultWidget extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _ScoreRow('💝 恋愛相性', result.loveScore),
+              _ScoreRow(t.compatibilityLove, result.loveScore),
               const SizedBox(height: 10),
-              _ScoreRow('🤝 友情相性', result.friendshipScore),
+              _ScoreRow(t.compatibilityFriendship, result.friendshipScore),
               const SizedBox(height: 10),
-              _ScoreRow('💼 仕事相性', result.workScore),
+              _ScoreRow(t.compatibilityWork, result.workScore),
             ],
           ),
         ),
@@ -406,9 +414,9 @@ class _CompatibilityResultWidget extends StatelessWidget {
 
         // 推奨アクション
         if (result.suggestedActions.isNotEmpty) ...[
-          const Text(
-            '💡 アドバイス',
-            style: TextStyle(
+          Text(
+            t.compatibilityAdvice,
+            style: const TextStyle(
               color: AppTheme.accent,
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -451,12 +459,12 @@ class _CompatibilityResultWidget extends StatelessWidget {
     );
   }
 
-  String _scoreLabel(int score) {
-    if (score >= 90) return '最高の相性 ✨';
-    if (score >= 75) return '相性抜群 💕';
-    if (score >= 60) return '良い相性 😊';
-    if (score >= 45) return '普通の相性 🌱';
-    return '要努力 💪';
+  String _scoreLabel(AppLocalizations t, int score) {
+    if (score >= 90) return t.compatScoreBest;
+    if (score >= 75) return t.compatScoreGreat;
+    if (score >= 60) return t.compatScoreGood;
+    if (score >= 45) return t.compatScoreAverage;
+    return t.compatScoreEffort;
   }
 }
 
@@ -498,7 +506,7 @@ class _ScoreRow extends StatelessWidget {
       SizedBox(
         width: 40,
         child: Text(
-          '$score点',
+          AppLocalizations.of(context)!.scorePoints(score),
           style: TextStyle(
               color: color, fontSize: 12, fontWeight: FontWeight.bold),
         ),

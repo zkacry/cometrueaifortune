@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:myfortune/core/constants/fortune_config.dart';
+import 'package:myfortune/core/locale/locale_controller.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
+import 'package:myfortune/l10n/app_localizations.dart';
 import 'package:myfortune/data/models/user_profile.dart';
 import 'package:myfortune/data/repositories/user_repository.dart';
 import 'package:myfortune/data/services/notification_service.dart';
@@ -263,6 +265,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
+          // 言語設定セクション
+          _SectionTitle(AppLocalizations.of(context)!.settingsLanguage),
+          const _LanguageSelector(),
+          const SizedBox(height: 20),
+
           // 通知設定セクション
           _SectionTitle('通知設定'),
           Container(
@@ -749,6 +756,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _LanguageSelector extends StatelessWidget {
+  const _LanguageSelector();
+
+  String _labelFor(BuildContext context, Locale locale) {
+    final t = AppLocalizations.of(context)!;
+    switch (locale.languageCode) {
+      case 'en':
+        return t.languageEnglish;
+      case 'zh':
+        return t.languageChineseSimplified;
+      case 'ko':
+        return t.languageKorean;
+      case 'ja':
+      default:
+        return t.languageJapanese;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: AppTheme.card,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: LocaleController.supportedLocales.map((locale) {
+          return ValueListenableBuilder<Locale>(
+            valueListenable: LocaleController.instance.locale,
+            builder: (context, current, _) {
+              final selected = current.languageCode == locale.languageCode;
+              return ListTile(
+                dense: true,
+                title: Text(
+                  _labelFor(context, locale),
+                  style: TextStyle(
+                    color: selected ? AppTheme.accent : AppTheme.textPrimary,
+                    fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 14,
+                  ),
+                ),
+                trailing: selected
+                    ? const Icon(Icons.check_circle, color: AppTheme.accent, size: 20)
+                    : null,
+                onTap: () => LocaleController.instance.setLocale(locale),
+              );
+            },
+          );
+        }).toList(),
       ),
     );
   }

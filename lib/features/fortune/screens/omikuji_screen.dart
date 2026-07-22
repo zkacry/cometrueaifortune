@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:myfortune/core/locale/locale_controller.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
 import 'package:myfortune/data/models/user_profile.dart';
 import 'package:myfortune/data/services/claude_service.dart';
+import 'package:myfortune/l10n/app_localizations.dart';
 
 class OmikujiScreen extends StatefulWidget {
   final UserProfile profile;
@@ -47,7 +49,10 @@ class _OmikujiScreenState extends State<OmikujiScreen>
 
     try {
       final raw = await ClaudeService()
-          .generateOmikuji(profile: widget.profile);
+          .generateOmikuji(
+            profile: widget.profile,
+            languageCode: LocaleController.instance.locale.value.languageCode,
+          );
 
       // RANK: と MESSAGE: をパース
       final rankMatch = RegExp(r'RANK:(.+)').firstMatch(raw);
@@ -62,7 +67,7 @@ class _OmikujiScreenState extends State<OmikujiScreen>
       if (mounted) {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('おみくじの取得に失敗しました')));
+          SnackBar(content: Text(AppLocalizations.of(context)!.omikujiErrorFetch)));
       }
     }
   }
@@ -92,9 +97,10 @@ class _OmikujiScreenState extends State<OmikujiScreen>
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('おみくじ'),
+        title: Text(t.omikujiAppBarTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -123,12 +129,12 @@ class _OmikujiScreenState extends State<OmikujiScreen>
               const SizedBox(height: 32),
 
               if (_loading)
-                const Column(children: [
-                  CircularProgressIndicator(
+                Column(children: [
+                  const CircularProgressIndicator(
                       color: AppTheme.accent, strokeWidth: 2),
-                  SizedBox(height: 16),
-                  Text('おみくじを引いています…',
-                      style: TextStyle(
+                  const SizedBox(height: 16),
+                  Text(t.omikujiLoading,
+                      style: const TextStyle(
                           color: AppTheme.textSecondary, fontSize: 14)),
                 ])
               else if (_rank != null) ...[
@@ -178,13 +184,13 @@ class _OmikujiScreenState extends State<OmikujiScreen>
                 const SizedBox(height: 28),
                 TextButton(
                   onPressed: _draw,
-                  child: const Text('もう一度引く',
-                      style: TextStyle(color: AppTheme.textSecondary)),
+                  child: Text(t.omikujiRetryButton,
+                      style: const TextStyle(color: AppTheme.textSecondary)),
                 ),
               ] else ...[
                 // 初期状態
                 Text(
-                  '${widget.profile.nickname}さん、\n今日の運勢を引いてみましょう',
+                  t.omikujiIntro(widget.profile.nickname),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                       color: AppTheme.textSecondary,
@@ -198,8 +204,8 @@ class _OmikujiScreenState extends State<OmikujiScreen>
                     onPressed: _draw,
                     style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 18)),
-                    child: const Text('🎋 おみくじを引く',
-                        style: TextStyle(
+                    child: Text(t.omikujiDrawButton,
+                        style: const TextStyle(
                             fontSize: 16,
                             letterSpacing: 2,
                             color: Colors.white)),

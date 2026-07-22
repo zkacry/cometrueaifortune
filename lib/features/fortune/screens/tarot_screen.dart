@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:myfortune/core/constants/fortune_config.dart';
 import 'package:myfortune/core/constants/tarot_data.dart';
+import 'package:myfortune/core/locale/locale_controller.dart';
 import 'package:myfortune/core/theme/app_theme.dart';
 import 'package:myfortune/data/models/consultation.dart';
 import 'package:myfortune/data/models/user_profile.dart';
@@ -12,6 +13,7 @@ import 'package:myfortune/data/services/claude_service.dart';
 import 'package:myfortune/data/services/fortune_summary_service.dart';
 import 'package:myfortune/data/services/usage_service.dart';
 import 'package:myfortune/features/fortune/screens/result_screen.dart';
+import 'package:myfortune/l10n/app_localizations.dart';
 
 class TarotScreen extends StatefulWidget {
   final UserProfile profile;
@@ -42,7 +44,7 @@ class _TarotScreenState extends State<TarotScreen> {
   void _drawCards() {
     if (_worryController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('悩みを入力してください')));
+        SnackBar(content: Text(AppLocalizations.of(context)!.worryEmptyError)));
       return;
     }
     final rng = Random();
@@ -75,6 +77,7 @@ class _TarotScreenState extends State<TarotScreen> {
         reversed: _reversed!,
         recentConsultations: widget.recentConsultations,
         fortuneSummary: summary,
+        languageCode: LocaleController.instance.locale.value.languageCode,
       );
 
       // SQLiteに保存
@@ -123,15 +126,16 @@ class _TarotScreenState extends State<TarotScreen> {
       debugPrint('TarotReading error: $e');
       setState(() => _step = _Step.cards);
       if (mounted) {
-        String errorMessage = '鑑定中にエラーが発生しました。もう一度お試しください。';
+        final t = AppLocalizations.of(context)!;
+        String errorMessage = t.errorGenericReading;
         if (e.toString().contains('Web') || e.toString().contains('CORS')) {
-          errorMessage = 'Androidアプリをご使用ください';
+          errorMessage = t.errorWebNotSupported;
         } else if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
-          errorMessage = 'APIの認証に失敗しました。設定を確認してください。';
+          errorMessage = t.errorApiAuth;
         } else if (e.toString().contains('timeout') || e.toString().contains('TimeoutException')) {
-          errorMessage = '接続がタイムアウトしました。ネットワークを確認してください。';
+          errorMessage = t.errorTimeout;
         } else if (e.toString().contains('No internet') || e.toString().contains('Connection')) {
-          errorMessage = 'インターネット接続を確認してください。';
+          errorMessage = t.errorNoInternet;
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -148,7 +152,7 @@ class _TarotScreenState extends State<TarotScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('タロット占い'),
+        title: Text(AppLocalizations.of(context)!.tarotAppBarTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -170,16 +174,16 @@ class _TarotScreenState extends State<TarotScreen> {
 enum _Step { input, cards, loading }
 
 // ── 悩みカテゴリ定義 ──────────────────────────────
-const _worryCategories = [
-  ('💕 恋愛・パートナー', '恋愛・パートナー'),
-  ('💼 仕事・キャリア', '仕事・キャリア'),
-  ('👥 人間関係', '人間関係'),
-  ('💰 お金・将来', 'お金・将来'),
-  ('🏠 家族', '家族'),
-  ('🌿 健康・メンタル', '健康・メンタル'),
-  ('🌟 進路・転換期', '進路・転換期'),
-  ('✏️ その他', '__other__'),
-];
+List<(String, String)> _worryCategories(AppLocalizations t) => [
+      (t.worryCategoryLove, t.worryCategoryLove),
+      (t.worryCategoryWork, t.worryCategoryWork),
+      (t.worryCategoryRelationship, t.worryCategoryRelationship),
+      (t.worryCategoryMoney, t.worryCategoryMoney),
+      (t.worryCategoryFamily, t.worryCategoryFamily),
+      (t.worryCategoryHealth, t.worryCategoryHealth),
+      (t.worryCategoryPath, t.worryCategoryPath),
+      (t.worryCategoryOther, '__other__'),
+    ];
 
 // ── 悩み入力 ────────────────────────────────────────
 class _InputStep extends StatefulWidget {
@@ -206,30 +210,31 @@ class _InputStepState extends State<_InputStep> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final showFreeText = _selectedCategory == '__other__';
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '今、何が気になっていますか？',
-            style: TextStyle(
+          Text(
+            t.worryPrompt,
+            style: const TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.w300),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'テーマを選んでカードを引いてください。',
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+          Text(
+            t.tarotSubtitle,
+            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
           ),
           const SizedBox(height: 20),
           // カテゴリグリッド
           Wrap(
             spacing: 10,
             runSpacing: 10,
-            children: _worryCategories.map((cat) {
+            children: _worryCategories(t).map((cat) {
               final isSelected = _selectedCategory == cat.$2;
               return GestureDetector(
                 onTap: () => _selectCategory(cat.$2),
@@ -270,8 +275,8 @@ class _InputStepState extends State<_InputStep> {
               autofocus: true,
               style: const TextStyle(
                   color: AppTheme.textPrimary, height: 1.8),
-              decoration: const InputDecoration(
-                hintText: '気になっていることを教えてください…',
+              decoration: InputDecoration(
+                hintText: t.worryHint,
               ),
             ),
           ],
@@ -282,8 +287,8 @@ class _InputStepState extends State<_InputStep> {
               onPressed: _selectedCategory == null ? null : widget.onNext,
               style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 18)),
-              child: const Text('カードを引く 🃏',
-                  style: TextStyle(
+              child: Text(t.tarotDrawButton,
+                  style: const TextStyle(
                       fontSize: 16, letterSpacing: 2, color: Colors.white)),
             ),
           ),
@@ -373,14 +378,15 @@ class _CardsStepState extends State<_CardsStep>
 
   @override
   Widget build(BuildContext context) {
-    final positions = ['過去', '現在', '未来'];
+    final t = AppLocalizations.of(context)!;
+    final positions = [t.positionPast, t.positionPresent, t.positionFuture];
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          const Text(
-            '3枚のカードが出ました',
-            style: TextStyle(
+          Text(
+            t.tarotCardsRevealed,
+            style: const TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.w300),
@@ -437,7 +443,7 @@ class _CardsStepState extends State<_CardsStep>
                                 textAlign: TextAlign.center,
                               ),
                               Text(
-                                widget.reversed[i] ? '逆位置' : '正位置',
+                                widget.reversed[i] ? t.tarotReversed : t.tarotUpright,
                                 style: TextStyle(
                                   color: widget.reversed[i]
                                       ? Colors.orange.shade300
@@ -462,8 +468,8 @@ class _CardsStepState extends State<_CardsStep>
               onPressed: widget.onGetReading,
               style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 18)),
-              child: const Text('鑑定してもらう ✨',
-                  style: TextStyle(fontSize: 16, letterSpacing: 2, color: Colors.white)),
+              child: Text(t.tarotReadingButton,
+                  style: const TextStyle(fontSize: 16, letterSpacing: 2, color: Colors.white)),
             ),
           ),
         ],
@@ -518,8 +524,8 @@ class _LoadingStepState extends State<_LoadingStep>
         const CircularProgressIndicator(
             color: AppTheme.accent, strokeWidth: 2),
         const SizedBox(height: 24),
-        const Text('カードが語りかけています…',
-            style: TextStyle(
+        Text(AppLocalizations.of(context)!.tarotLoading,
+            style: const TextStyle(
                 color: AppTheme.textSecondary,
                 fontSize: 14,
                 letterSpacing: 1)),
