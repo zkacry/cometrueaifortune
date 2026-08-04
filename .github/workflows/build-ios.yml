@@ -23,6 +23,24 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
+      - name: Write .env from secrets
+        env:
+          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          cat > .env << EOF
+          CLAUDE_API_KEY=${CLAUDE_API_KEY}
+          CLAUDE_API_URL=https://api.anthropic.com/v1/messages
+          CLAUDE_MODEL=claude-haiku-4-5-20251001
+
+          DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+          DEEPSEEK_MODEL=deepseek-v4-flash
+
+          GEMINI_API_KEY=${GEMINI_API_KEY}
+          GEMINI_MODEL=gemini-3.1-flash-lite
+          EOF
+
       - name: Setup Ruby / Bundler
         uses: ruby/setup-ruby@v1
         with:
