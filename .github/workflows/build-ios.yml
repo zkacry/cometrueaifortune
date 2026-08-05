@@ -51,15 +51,16 @@ jobs:
           bundler-cache: true
           working-directory: ios
 
-      - name: Build iOS (unsigned IPA)
+      - name: Build iOS (unsigned)
         run: flutter build ios --release --no-codesign
 
-      - name: Verify app build successful
-        run: |
-          if [ -d build/ios/iphoneos/Runner.app ]; then
-            echo "✅ iOS app bundle built successfully"
-            du -sh build/ios/iphoneos/Runner.app
-          else
-            echo "❌ App bundle not found"
-            exit 1
-          fi
+      - name: Fastlane - Sign & Upload to TestFlight
+        working-directory: ios
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: bundle exec fastlane beta
