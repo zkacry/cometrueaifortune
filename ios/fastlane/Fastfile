@@ -49,6 +49,8 @@ platform :ios do
       workspace: "Runner.xcworkspace",
       scheme: "Runner",
       export_method: "app-store",
+      skip_package_ipa: false,
+      skip_package_dependencies_resolution: true,
       export_options: {
         provisioningProfiles: {
           "com.yourwish.cometrueaifortune" => profile_name
@@ -56,11 +58,8 @@ platform :ios do
       }
     )
 
-    upload_to_testflight(
-      api_key: api_key,
-      skip_waiting_for_build_processing: true
-    )
-
-    UI.success "✅ IPA signed & uploaded to TestFlight"
+    UI.success "✅ Signed IPA generated: build/ios/ipa/Runner.ipa"
+    UI.message "⚠️  Skipping TestFlight upload (archive step is slow in CI)"
+    UI.message "📦 IPA is ready for manual upload or local testing"
   end
 end
