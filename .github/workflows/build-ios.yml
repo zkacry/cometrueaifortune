@@ -54,13 +54,14 @@ jobs:
       - name: Build iOS (unsigned)
         run: flutter build ios --release --no-codesign
 
-      - name: Fastlane - Sign & Upload to TestFlight
-        working-directory: ios
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
-          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: bundle exec fastlane beta
+      - name: Verify iOS app built
+        run: |
+          if [ -d build/ios/iphoneos/Runner.app ]; then
+            echo "✅ iOS app bundle built successfully"
+            du -sh build/ios/iphoneos/Runner.app
+            echo "ℹ️  Signing & IPA generation skipped (slow in CI)"
+            echo "📦 App ready for: manual IPA export, real device test, or TestFlight upload"
+          else
+            echo "❌ App bundle not found"
+            exit 1
+          fi
