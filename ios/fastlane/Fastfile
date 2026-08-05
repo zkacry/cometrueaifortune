@@ -19,7 +19,15 @@ platform :ios do
 
   desc "Build signed IPA (no TestFlight upload)"
   lane :beta do
-    match(type: "appstore", readonly: false, keychain_password: "")
+    api_key = app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_content: ENV["ASC_KEY_CONTENT"],
+      is_key_content_base64: true,
+      in_house: false
+    )
+
+    match(type: "appstore", readonly: false, api_key: api_key, keychain_password: "")
 
     # match may generate a profile name with a random numeric suffix
     # (e.g. "match AppStore com.yourwish.cometrueaifortune 1785826872")
