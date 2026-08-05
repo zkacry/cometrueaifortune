@@ -54,12 +54,12 @@ jobs:
       - name: Build iOS (unsigned IPA)
         run: flutter build ios --release --no-codesign
 
-      - name: Verify IPA exists
+      - name: Verify app build successful
         run: |
-          if [ -f build/ios/ipa/Runner.ipa ]; then
-            echo "✅ Unsigned IPA built successfully"
-            ls -lh build/ios/ipa/Runner.ipa
+          if [ -d build/ios/iphoneos/Runner.app ]; then
+            echo "✅ iOS app bundle built successfully"
+            du -sh build/ios/iphoneos/Runner.app
           else
-            echo "❌ IPA not found"
+            echo "❌ App bundle not found"
             exit 1
           fi
