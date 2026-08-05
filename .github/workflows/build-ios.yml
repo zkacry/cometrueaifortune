@@ -9,7 +9,7 @@ permissions:
 jobs:
   build:
     runs-on: macos-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -51,16 +51,15 @@ jobs:
           bundler-cache: true
           working-directory: ios
 
-      - name: Build iOS (unsigned)
+      - name: Build iOS (unsigned IPA)
         run: flutter build ios --release --no-codesign
 
-      - name: Fastlane - fetch signing & upload TestFlight
-        working-directory: ios
-        env:
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
-          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: bundle exec fastlane beta
+      - name: Verify IPA exists
+        run: |
+          if [ -f build/ios/ipa/Runner.ipa ]; then
+            echo "✅ Unsigned IPA built successfully"
+            ls -lh build/ios/ipa/Runner.ipa
+          else
+            echo "❌ IPA not found"
+            exit 1
+          fi
