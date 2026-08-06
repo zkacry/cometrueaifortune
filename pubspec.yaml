@@ -44,7 +44,7 @@ dependencies:
   fl_chart: ^0.70.2
 
   # プッシュ通知
-  flutter_local_notifications: ^17.1.3
+  flutter_local_notifications: ^22.2.0
   permission_handler: ^12.0.3
 
   # アプリ内課金
