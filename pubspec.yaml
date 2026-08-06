@@ -41,7 +41,7 @@ dependencies:
   shared_preferences: ^2.5.3
 
   # グラフ
-  fl_chart: ^0.70.2
+  fl_chart: ^1.2.0
 
   # プッシュ通知
   flutter_local_notifications: ^17.1.3
